@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atomicng"
+version = "0.4.0a3"
+description = "AtomicNG — atomic forward-only continual writing into a language model's native n-gram memory (arXiv:2610.31125)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "numpy>=1.26",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+torch = ["torch>=2.4", "safetensors>=0.4"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+atomicng = "atomicng.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+atomicng = ["py.typed"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]  # sys.path.insert перед импортами atomicng
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

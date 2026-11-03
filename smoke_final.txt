@@ -1,0 +1,28 @@
+[write] записано 49 событий в 45 строк
+[write] записано 45 событий в 44 строк
+[write] записано 39 событий в 36 строк
+{
+  "locality": true,
+  "query_effect": true,
+  "verify_after_writes": "откат побитовый (пробы нейтральны, restore точен)",
+  "overlay_roundtrip": true,
+  "verify_after_revert": "откат побитовый (пробы нейтральны, restore точен)",
+  "verify_after_clear": "откат побитовый (пробы нейтральны, restore точен)",
+  "base_restored": true,
+  "metrics": {
+    "n_writes": 3,
+    "n_hot_rows_total": 0,
+    "duration_ms_mean": 5.546333333333333,
+    "duration_ms_max": 7.129,
+    "n_events_mean": 44.333333333333336,
+    "n_events_max": 49,
+    "mean_gate_mean": 0.5,
+    "mean_gate_max": 0.5,
+    "patch_max_norm_mean": 0.035416667039195694,
+    "patch_max_norm_max": 0.04374999925494194,
+    "events_per_s_mean": 8367.947260474379,
+    "events_per_s_max": 10142.515341704417
+  },
+  "smoke": true
+}
+[smoke] готово за 0.27с

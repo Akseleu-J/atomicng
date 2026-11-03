@@ -1,0 +1,20 @@
+# atomicng: дефолтный конфиг записи (config-as-code, один файл на write/eval — как у LLaMA-Factory)
+spec:
+  name: sidecar-small
+  n_rows: 16384
+  row_width: 160
+  n_heads: 1
+  key_order: 2
+  inject_layer: 2
+
+writer:
+  name: hash        # v0.2a tiny-пайплайн; 'plain'/'delta' — WriterMLP через API (torch)
+  gate: 0.5
+
+policies:
+  row_budget: null          # жёсткий лимит строк (S2); для продакшна ставьте число
+  write_budget: null        # жёсткий лимит суммарных записей
+  hot_row_norm_cap: null    # мягкий кап нормы строки → warning + метрика hot
+  hard_row_norm_cap: null   # жёсткий кап нормы строки → отказ записи
+
+seed: 17

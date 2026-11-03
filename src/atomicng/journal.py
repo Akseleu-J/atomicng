@@ -1,0 +1,68 @@
+"""Audit-лог (append-only JSONL) и pre-image журнал для точного undo (S4).
+
+Точный undo возможен дёшево: перед блоком записи сохраняются pre-image затронутых строк
+(строка = row_width float), их счётчики и такт. revert восстанавливает состояние байт-в-байт.
+"""
+from __future__ import annotations
+
+import json
+from collections.abc import Iterable
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import numpy as np
+
+from .memory import MemoryPatch
+
+
+class AuditLog:
+    """Append-only журнал операций. Каждый write/merge/clear оставляет запись с отчётом."""
+
+    def __init__(self, path: str | None = None) -> None:
+        self.path = Path(path) if path else None
+        self.entries: list[dict] = []
+        if self.path and self.path.exists():
+            with self.path.open("r", encoding="utf-8") as f:
+                self.entries = [json.loads(line) for line in f if line.strip()]
+
+    def append(self, kind: str, payload: dict) -> None:
+        entry = {"kind": kind, "payload": payload}
+        self.entries.append(entry)
+        if self.path:
+            with self.path.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    def __len__(self) -> int:
+        return len(self.entries)
+
+
+@dataclass
+class _UndoEntry:
+    clock: int
+    rows: dict[int, tuple[np.ndarray | None, int, int]] = field(default_factory=dict)
+
+
+class UndoJournal:
+    """Стек pre-image снимков: revert_last возвращает патч в состояние до блока записи."""
+
+    def __init__(self) -> None:
+        self._stack: list[_UndoEntry] = []
+
+    def record(self, patch: MemoryPatch, row_ids: Iterable[int]) -> None:
+        entry = _UndoEntry(clock=patch._clock)
+        for r in set(row_ids):
+            value, count, last_touch = patch.preimage(r)
+            entry.rows[r] = (value, count, last_touch)
+        self._stack.append(entry)
+
+    def revert_last(self, patch: MemoryPatch) -> list[int]:
+        if not self._stack:
+            return []
+        entry = self._stack.pop()
+        for r, (value, count, last_touch) in entry.rows.items():
+            patch._set_row_state(r, value, count, last_touch)
+        patch._clock = entry.clock
+        return sorted(entry.rows)
+
+    def __len__(self) -> int:
+        return len(self._stack)

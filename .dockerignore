@@ -1,0 +1,10 @@
+runs/
+examples/
+notebooks/
+tests/
+scripts/
+.github/
+FIDELITY.md
+**/__pycache__/
+*.pyc
+*.egg-info/

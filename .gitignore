@@ -1,0 +1,24 @@
+# build artifacts
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# локальные прогоны и артефакты
+runs/
+kaggle-evidence/
+
+# payloads ночного запуска (публикуются через Kaggle, не через git)
+kaggle-night/
+kaggle-night-cpu/
+kaggle-night-gpu/
+kaggle-night-tpu/
+kaggle-night-verify/
+
+# среда
+.env
+.env.*
