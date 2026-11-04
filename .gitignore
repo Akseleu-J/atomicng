@@ -22,3 +22,5 @@ kaggle-night-verify/
 # среда
 .env
 .env.*
+site_docs/
+site/

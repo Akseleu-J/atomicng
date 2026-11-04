@@ -39,7 +39,7 @@ from .testing import HashWriter
 from .verify import VerifyReport, verify_deletion
 from .vllm_bridge import export_for_vllm, merged_table, vllm_general_plugins
 
-__version__ = "0.5.0a2"
+__version__ = "0.9.0rc1"
 
 __all__ = [
     "AuditLog",

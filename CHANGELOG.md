@@ -2,6 +2,23 @@
 
 Формат — [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/); версионирование — SemVer.
 
+## [0.9.0rc1] — 2026-11-04
+
+**Кандидат на v1.0.0**: публичный API заморожен (golden-тест `test_api_surface`); остались
+только внешние пункты — PyPI upload, Colab TPU прогон владельца, vLLM-стенд (RELEASE_CHECKLIST.md).
+
+### Added
+- **Docs-сайт** (mkdocs Material): сборка из корневых MD единым скриптом
+  (`scripts/build_docs.py`), GitHub Pages workflow (`docs.yml`), nav: Home/Calibration/Fidelity/vLLM/Changelog.
+- **Golden-тест публичного API**: `__all__` заморожен; любое изменение — сознательное
+  (тест печатает добавленное/удалённое и требует пометки в CHANGELOG).
+- `examples/README.md` — витрина примеров (ноутбуки, протоколы, обученный writer из Release).
+- `RELEASE_CHECKLIST.md` — чеклист релиза v1.0.0 для владельца.
+
+### Fixed
+- Флейк `test_trainer_d1_chain_is_bptt`: guard для групп без градиентного пути +
+  детерминированные блоки (см. 0.5.0a1 — теперь и в main-тренере).
+
 ## [0.5.0a2] — 2026-11-04
 
 ### Added

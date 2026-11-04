@@ -1,0 +1,29 @@
+site_name: AtomicNG
+site_description: "AtomicNG — atomic forward-only continual writing into a language model's native n-gram memory (arXiv:2610.31125)"
+site_url: https://akseleu-j.github.io/atomicng/
+repo_url: https://github.com/Akseleu-J/atomicng
+repo_name: Akseleu-J/atomicng
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.instant
+  palette:
+    - scheme: default
+      primary: indigo
+  icon:
+    logo: material/memory
+
+nav:
+  - Home: index.md
+  - Calibration (live matrix): CALIBRATION.md
+  - Paper fidelity: FIDELITY.md
+  - vLLM integration: vllm.md
+  - Changelog: CHANGELOG.md
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
