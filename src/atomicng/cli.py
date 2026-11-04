@@ -238,6 +238,22 @@ def cmd_export_ple(args) -> int:
     return 0
 
 
+def cmd_export_vllm(args) -> int:
+    """Артефакты для vLLM: merged таблица T⁰+Δ + vllm_config.json (путь 1 из docs/vllm.md)."""
+    patch = atomicng.MemoryPatch.load_pretrained(args.overlay)
+    if args.base_table:
+        base = np.load(args.base_table)
+        base = base["table"] if "table" in base else base
+    else:
+        base = atomicng.TinyModel(spec=patch.spec, seed=args.seed).t0
+    out = atomicng.export_for_vllm(base, patch, args.out, model_id=args.model_id, overlay_path=args.overlay)
+    cfg = json.loads((out / "vllm_config.json").read_text(encoding="utf-8"))
+    print(json.dumps({"out": str(out), "merged": cfg["merged_table"],
+                      "sha256": cfg["sha256_table"][:16] + "…", "delta_rows": cfg["n_delta_rows"]},
+                     ensure_ascii=False))
+    return 0
+
+
 # ------------------------------------------------------------------- парсер
 
 
@@ -298,6 +314,14 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out", required=True)
     p.add_argument("--seed", type=int, default=17, help="seed sidecar-T⁰ для tiny-источника")
     p.set_defaults(func=cmd_export_ple)
+
+    p = sub.add_parser("export-vllm", help="merged таблица + vllm_config.json для vLLM (docs/vllm.md)")
+    p.add_argument("--overlay", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--model-id", default="unspecified")
+    p.add_argument("--base-table", help="npz/npy с T⁰ (по умолчанию tiny-T⁰ по seed)")
+    p.add_argument("--seed", type=int, default=17)
+    p.set_defaults(func=cmd_export_vllm)
 
     p = sub.add_parser("smoke", help="end-to-end цикл на tiny-модели")
     p.set_defaults(func=cmd_smoke)

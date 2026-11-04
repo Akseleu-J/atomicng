@@ -1,5 +1,11 @@
 # AtomicNG
 
+[![ci](https://github.com/Akseleu-J/atomicng/actions/workflows/ci.yml/badge.svg)](https://github.com/Akseleu-J/atomicng/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
+[![Colab TPU](https://img.shields.io/badge/Colab-TPU%20калибровка-F9AB00?logo=google-colab)](https://colab.research.google.com/github/Akseleu-J/atomicng/main/notebooks/tpu_calibration.ipynb)
+[![vLLM](https://img.shields.io/badge/vLLM-general__plugin-red)](docs/vllm.md)
+
 **Atomic N-gram Memory** — atomic forward-only continual writing into a language model's native
 n-gram memory. «Atomic» здесь не украшение: записи атомарны (всё-или-ничего под guards), откат
 атомарен (побитовый), бюджеты атомарны.
@@ -7,7 +13,11 @@ n-gram memory. «Atomic» здесь не украшение: записи ат�
 n-грамм `T⁰` заморожена, новые знания накапливаются в разреженном патче `Δ` — запись только
 forward-проходами, очистка `Δ` побитово возвращает исходную модель (`T = T⁰ + Δ`).
 
-Apache-2.0. Ядро — чистый NumPy (без ML-фреймворков); torch — опциональный слой (writer'ы, HF).
+Apache-2.0. Ядро — чистый NumPy (без ML-фреймворков); torch — опциональный слой (writer'ы, HF);
+**vLLM** — нативный мост через `vllm.general_plugins` ([docs/vllm.md](docs/vllm.md)).
+
+**Живая матрица производительности** (реальные прогоны CPU/CUDA/TPU): [CALIBRATION.md](CALIBRATION.md).
+**One-click TPU-калибровка в Colab**: [открыть](https://colab.research.google.com/github/Akseleu-J/atomicng/main/notebooks/tpu_calibration.ipynb).
 
 ## Установка
 

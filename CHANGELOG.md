@@ -2,6 +2,19 @@
 
 Формат — [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/); версионирование — SemVer.
 
+## [0.5.0a2] — 2026-11-04
+
+### Added
+- **Нативный мост к vLLM** (`vllm_bridge.py`, фишка стандартов ниши — интеграция с движком):
+  - entry-point `vllm.general_plugins` → `atomicng_ngram_overlay`: при старте `vllm serve`
+    плагин читает `VLLM_ATOMICNG_OVERLAY` и отдаёт провайдер merged-таблицы (T⁰+Δ);
+    без оверлея плагин безвреден; vllm как зависимость НЕ нужен (вызов односторонний);
+  - CLI `atomicng export-vllm`: merged таблица (.npz) + `vllm_config.json` c sha256-манифестом
+    и provenance (путь 1 — работает на любом движке уже сегодня);
+  - `docs/vllm.md` — три пути интеграции + готовый черновик issue для upstream vLLM;
+  - 6 тестов моста (merged-математика, env-провайдер, артефакты, entry-point в метаданных).
+- README: бейджи (CI/license/python/Colab-TPU/vLLM), ссылки на CALIBRATION.md и one-click Colab.
+
 ## [0.5.0a1] — 2026-11-04
 
 ### Added

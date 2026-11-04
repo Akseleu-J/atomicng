@@ -1,9 +1,9 @@
-........................................................................ [ 93%]
-.....                                                                    [100%]
+........................................................................ [ 86%]
+...........                                                              [100%]
 ============================== warnings summary ===============================
 tests/test_native.py::test_gather_uses_memory
   C:\Users\omirb\.zcode\workspace\e721ed1e-feba-4588-bc1c-7a9478695327\atomicng\src\atomicng\native.py:118: DeprecationWarning: __array_wrap__ must accept context and return_scalar arguments (positionally) in the future. (Deprecated NumPy 2.0)
     piece = piece + extra
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-77 passed, 1 warning in 49.65s
+83 passed, 1 warning in 58.47s

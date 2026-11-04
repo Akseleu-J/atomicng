@@ -37,8 +37,9 @@ from .signing import generate_keypair, sign_file, verify_file
 from .specs import SIDECAR_SMALL, TableSpec
 from .testing import HashWriter
 from .verify import VerifyReport, verify_deletion
+from .vllm_bridge import export_for_vllm, merged_table, vllm_general_plugins
 
-__version__ = "0.5.0a1"
+__version__ = "0.5.0a2"
 
 __all__ = [
     "AuditLog",
@@ -70,6 +71,7 @@ __all__ = [
     "build_blocks",
     "build_blocks_from_texts",
     "build_report",
+    "export_for_vllm",
     "chain",
     "check_regression",
     "clear_memory",
@@ -78,6 +80,7 @@ __all__ = [
     "generate_keypair",
     "load_metrics_jsonl",
     "load_ple",
+    "merged_table",
     "publish_check",
     "revert_last",
     "run_bench",
@@ -87,6 +90,7 @@ __all__ = [
     "specs",
     "verify_deletion",
     "verify_file",
+    "vllm_general_plugins",
     "write",
     "write_report",
     "__version__",

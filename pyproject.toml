@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "atomicng"
-version = "0.5.0a1"
+version = "0.5.0a2"
 description = "AtomicNG — atomic forward-only continual writing into a language model's native n-gram memory (arXiv:2610.31125)"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -20,6 +20,9 @@ dev = ["pytest>=8", "ruff>=0.6"]
 
 [project.scripts]
 atomicng = "atomicng.cli:main"
+
+[project.entry-points."vllm.general_plugins"]
+atomicng_ngram_overlay = "atomicng.vllm_bridge:vllm_general_plugins"
 
 [tool.setuptools.packages.find]
 where = ["src"]
