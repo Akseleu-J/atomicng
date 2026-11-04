@@ -121,6 +121,10 @@ class WriterTrainer:
                     old = delta.get(r, torch.zeros(self.spec.row_width, device=self.device))
                     delta[r] = (1.0 - w) * old + a
                     counts[r] = counts.get(r, 0) + int(mask.sum())
+        if not total.requires_grad:
+            # Группа без градиентного пути (нет общих строк между блоками) —
+            # обновление бессмысленно, как и в hf_training: пропускаем шаг.
+            return float(total.detach())
         total.backward()
         torch.nn.utils.clip_grad_norm_(self.writer.parameters(), self.clip)
         self.opt.step()

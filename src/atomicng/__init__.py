@@ -38,7 +38,7 @@ from .specs import SIDECAR_SMALL, TableSpec
 from .testing import HashWriter
 from .verify import VerifyReport, verify_deletion
 
-__version__ = "0.4.0a3"
+__version__ = "0.5.0a1"
 
 __all__ = [
     "AuditLog",

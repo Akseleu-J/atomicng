@@ -2,6 +2,25 @@
 
 Формат — [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/); версионирование — SemVer.
 
+## [0.5.0a1] — 2026-11-04
+
+### Added
+- **Track B, ядро нативного адаптера** (`native.py`): `NativeTableSpec` (16 голов 8+8, d=160,
+  зафиксировано статьёй), `native_head_rows`/`native_rows_all_heads` (16 адресов на позицию,
+  соли голов), `NativeReadOut` — read-out статьи: concat ℝ²⁵⁶⁰ → value-путь + gated key-путь
+  (RMSNorm, sign/√max floor, каузальный depthwise conv 4 тапа, dilation 3) → ℝ¹⁰²⁴⁰.
+  Композиция gated-пути — документированная интерпретация (FIDELITY ≈).
+- **CALIBRATION.md** — живая матрица производительности из реальных прогонов: Windows-CPU,
+  Kaggle-CPU, CUDA T4 (73 мс/группа), Colab 24-ядерный CPU (54 мс/группа), TPU-чип (JAX 0.11.2
+  виден; XLA-стенд отработал); обучение writer'а: 860 шагов CPU → первый acquisition +0.0422.
+- Результаты Colab-TPU прогоны владельца — в evidence (`kaggle-evidence/colab-tpu/`).
+
+### Fixed
+- **Флейк test_trainer_d1_chain_is_bptt**: случайные блоки могли не иметь общих строк →
+  нет градиентного пути. Теперь: guard в `WriterTrainer.train_group` (пропуск групп без пути,
+  синхронно с hf_training) + детерминированные блоки с повторами в тесте.
+- `test_gather_uses_memory`: torch.as_tensor для numpy-значений патча.
+
 ## [0.4.0a3] — 2026-11-02
 
 ### Fixed
