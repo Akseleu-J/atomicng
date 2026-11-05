@@ -41,10 +41,12 @@
 - Kaggle TPU-VM: XLA BPTT-цепочка **работает на чипе** (S3 OK, сессия отменена на 2ч);
 - Colab (v5e, Python 3.13, torch 2.14.1): чип виден через **JAX 0.11.2**; torch_xla из PyPI
   не совпал по ABI с предустановленным torch (`_XLAC.so: undefined symbol`) — в ноутбуке
-  есть ячейка установки совпадающей пары + restart, либо JAX-путь (ниже);
-- **S3b (JAX-путь, без torch_xla)**: математика D1 (read → writer → D1-write) выполняется
-  на чипе через jitted-функцию; тайминги чипа пишутся в `/content/results/S3b_accel_jax.json`;
-  BPTT-обучение через XLA — калибруется этой же ячейкой после restart'а пары.
+  есть ячейка установки совпадающей пары + restart;
+- **S3b (JAX-путь, без torch_xla) — ВЫПОЛНЕНО НА ЧИПЕ** (владелец, 05.11): устройство
+  `TPU_0`, математика D1 (read T⁰+Δ → writer → D1-write) **8.4 мс/итерация**
+  (max 0.156с — JIT-компиляция первой итерации), loss конечен на 20 итерациях;
+  отчёт: `kaggle-evidence/colab-tpu/results/S3b_accel_jax.json`;
+- BPTT-обучение на чипе — XLA-путь после restart'а пары (ячейка xla_install в ноутбуке).
 
 ## Известные ограничения
 
