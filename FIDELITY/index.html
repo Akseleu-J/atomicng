@@ -1,0 +1,805 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AtomicNG — atomic forward-only continual writing into a language model's native n-gram memory (arXiv:2610.31125)">
+      
+      
+      
+        <link rel="canonical" href="https://akseleu-j.github.io/atomicng/FIDELITY/">
+      
+      
+        <link rel="prev" href="../CALIBRATION/">
+      
+      
+        <link rel="next" href="../vllm/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Paper fidelity - AtomicNG</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#fidelity-atomicng" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="AtomicNG" class="md-header__button md-logo" aria-label="AtomicNG" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 17H7V7h10m4 4V9h-2V7a2 2 0 0 0-2-2h-2V3h-2v2h-2V3H9v2H7c-1.11 0-2 .89-2 2v2H3v2h2v2H3v2h2v2a2 2 0 0 0 2 2h2v2h2v-2h2v2h2v-2h2a2 2 0 0 0 2-2v-2h2v-2h-2v-2m-6 2h-2v-2h2m2-2H9v6h6z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AtomicNG
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Paper fidelity
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Akseleu-J/atomicng" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Akseleu-J/atomicng
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="AtomicNG" class="md-nav__button md-logo" aria-label="AtomicNG" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 17H7V7h10m4 4V9h-2V7a2 2 0 0 0-2-2h-2V3h-2v2h-2V3H9v2H7c-1.11 0-2 .89-2 2v2H3v2h2v2H3v2h2v2a2 2 0 0 0 2 2h2v2h2v-2h2v2h2v-2h2a2 2 0 0 0 2-2v-2h2v-2h-2v-2m-6 2h-2v-2h2m2-2H9v6h6z"/></svg>
+
+    </a>
+    AtomicNG
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Akseleu-J/atomicng" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Akseleu-J/atomicng
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CALIBRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration (live matrix)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper fidelity
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper fidelity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Политика по официальному коду
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Таблица соответствия
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Известные осознанные отклонения (реестр)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Как поддерживать файл
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vllm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    vLLM integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CHANGELOG/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Политика по официальному коду
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Таблица соответствия
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Известные осознанные отклонения (реестр)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Как поддерживать файл
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="fidelity-atomicng">FIDELITY — соответствие AtomicNG статье и официальному коду</h1>
+<p>Контроль отклонений от <strong>arXiv:2610.31125</strong> («Delta N-gram: Forward-Only Continual Writing
+into a Language Model's Native N-gram Memory», Hao Wu, 2026) и от официального репозитория
+<code>af-74413592/delta-ngram</code>.</p>
+<p>Каждая строка таблицы подкреплена тестом из <code>tests/test_fidelity.py</code> (где применимо);
+константы статьи живут в <code>src/atomicng/paper.py</code> — единственном источнике истины.</p>
+<h2 id="_1">Политика по официальному коду</h2>
+<p>У официального репозитория <strong>нет лицензии</strong> ⇒ действует clean-room политика: код AtomicNG
+написан по тексту статьи и по <strong>публичному README</strong> официального репозитория (описание
+поведения, CLI-концепция, наличие smoke-конфига), но исходники официального кода не читались
+и не копировались. Формат writer-чекпоинтов и оверлеев у нас собственный (safetensors).
+Поэтому «отклонение от официального кода» в правовом смысле невозможно; контроль ведётся
+по статье + задокументированному поведению официального проекта.</p>
+<h2 id="_2">Таблица соответствия</h2>
+<p>Статусы: <strong>✓</strong> реализовано по статье и зафиксировано тестом · <strong>≈</strong> реализовано с явным
+задокументированным отклонением · <strong>✗</strong> не реализовано (gap, запланировано) · <strong>+</strong> осознанное
+расширение сверх статьи.</p>
+<table>
+<thead>
+<tr>
+<th>Элемент</th>
+<th>В статье</th>
+<th>В AtomicNG</th>
+<th>Статус</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Декомпозиция T = T⁰ + Δ</td>
+<td>T⁰ заморожена, Δ разрежена на затронутых строках</td>
+<td><code>MemoryPatch</code>: только затронутые строки, T⁰ недоступна для записи</td>
+<td>✓ (<code>test_core</code>, verify)</td>
+</tr>
+<tr>
+<td>Правило записи D1</td>
+<td>A_j=(1/n)Σβ_a v_a; w_j=(1/n)Σβ_a; Δ⁺=(1−w)Δ+A; c⁺=c+n</td>
+<td><code>rules/d1.py</code>, двухфазное применение; тест сверяет с формулами буквально</td>
+<td>✓ (<code>test_fidelity::d1</code>)</td>
+</tr>
+<tr>
+<td>Ограниченность (Prop. 1)</td>
+<td>‖Δ_j⁺‖ ≤ max(‖Δ_j‖, max‖v_a‖)</td>
+<td>property-тест на случайной цепочке 50 блоков</td>
+<td>✓ (<code>test_core::bounded</code>)</td>
+</tr>
+<tr>
+<td>Порядок-инвариантность блока</td>
+<td>block averaging коммутативен</td>
+<td>property-тест чексуммы при перестановке событий</td>
+<td>✓ (<code>test_core::order</code>)</td>
+</tr>
+<tr>
+<td>Гейт</td>
+<td>β_a = σ(B_θ[x_a, Δ_j, v_a−Δ_j, log(1+c_j)])</td>
+<td><code>WriterMLP.b_head</code>, вход F+2d+1, sigmoid</td>
+<td>✓ (<code>test_fidelity::gate</code>)</td>
+</tr>
+<tr>
+<td>Признаки Eq. 7</td>
+<td>[Ĥ_p; mean p+1..p+4; пул блока; эмбеддинг (order, head)], grad-stop на Ĥ</td>
+<td><code>WriterMLP.forward</code>, F=3·Hd+emb, detach; FEATURE_NEXT_WINDOW=4</td>
+<td>✓ (<code>test_fidelity::eq7</code>)</td>
+</tr>
+<tr>
+<td>Архитектура writer'а</td>
+<td>V_θ/B_θ: два 2-слойных MLP, hidden 256, ≈4 075 681 параметров</td>
+<td><code>WriterMLP</code>: та же формула; при нативной конфигурации расхождение &lt;1%</td>
+<td>✓ (<code>test_fidelity::params</code>)</td>
+</tr>
+<tr>
+<td>Масштаб целей s_h</td>
+<td>фиксированные s_h: RMS начальных целей = 0.01·RMS(T⁰_h)</td>
+<td><code>calibrate_to_table(t0, ρ=0.01)</code>; распределение входа для калибровки в статье не задано — используем шум N(0,1) (документировано)</td>
+<td>≈ (<code>test_fidelity::rho</code>)</td>
+</tr>
+<tr>
+<td>Цели линейны</td>
+<td>v = s_h·V_θ(x), без ограничителя</td>
+<td><code>bound_targets=False</code> по умолчанию; tanh — opt-in для sidecar-стабилизации</td>
+<td>✓/≈ (<code>test_torch::tanh</code>)</td>
+</tr>
+<tr>
+<td>Двухвариантность (plain/delta)</td>
+<td>plain: кодирование на T⁰-only модели, блоки батчируются; delta: читает текущую память</td>
+<td>delta-оркестрация реализована (обе BPTT-схемы memory-aware); <strong>plain-кодирование</strong> реализовано в write-time (<code>handle.write(..., memory_aware=False)</code>: writer видит нулевые Δ/c_j — тест); plain-BPTT-процедура обучения в извлечении статьи недоопределена — gap остаётся только там</td>
+<td>≈ (<code>test_v04::plain</code>)</td>
+</tr>
+<tr>
+<td>Обучение: блоки/префикс</td>
+<td>512 токенов, query 128</td>
+<td><code>build_blocks</code> дефолты 512/128; mini-конфиги CPU используют меньшие размеры ЯВНО</td>
+<td>✓/≈ (<code>test_fidelity::evidence</code>)</td>
+</tr>
+<tr>
+<td>Обучение: нормировка группы</td>
+<td>loss нормируется раз на группу из 12 траекторий</td>
+<td>нормировка на группу реализована; размер группы — параметр (в CPU-прогонах &lt;12)</td>
+<td>≈</td>
+</tr>
+<tr>
+<td>Оптимизатор</td>
+<td>AdamW, LR 3e-4, без weight decay, clip 1</td>
+<td>дефолты обоих тренеров = статья, зафиксированы тестом</td>
+<td>✓ (<code>test_fidelity::hyper</code>)</td>
+</tr>
+<tr>
+<td>BPTT сквозь цепочку записей</td>
+<td>backprop через всю цепочку D1 в θ; grad-stop на Ĥ</td>
+<td>обе схемы: словарь дифференцируемых Δ; single-backward на группу; группы без пути пропускаются</td>
+<td>✓ (<code>test_hf_training</code>)</td>
+</tr>
+<tr>
+<td>Память стартует пустой</td>
+<td>на каждую траекторию</td>
+<td><code>self._delta = {}</code> на траекторию</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Блок предсказывается → пишется</td>
+<td>порядок Alg. 1/2</td>
+<td>предсказание → запись в обоих тренерах</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Decay Δ ← αΔ</td>
+<td>α=1 основной; 0.99 сравнивался; block clock</td>
+<td><code>MemoryPatch(decay)</code>, ленивый по тактам, дефолт 1.0</td>
+<td>✓ (<code>test_fidelity::evidence</code>)</td>
+</tr>
+<tr>
+<td>Удаление Δ ⇒ база</td>
+<td>очистка восстанавливает модель</td>
+<td><code>verify_deletion</code> побитово (нейтральные пробы + чексумма restore)</td>
+<td>✓ (<code>test_core</code>)</td>
+</tr>
+<tr>
+<td>16-головая нативная таблица</td>
+<td>8 bigram + 8 trigram, d=160, чтение перед слоем 2</td>
+<td>спека <code>TableSpec</code> допускает; sidecar v0.x = 1 голова биграмм; нативный read-out — Track B (v1.0)</td>
+<td>✗ (константы в <code>paper.py</code> готовы)</td>
+</tr>
+<tr>
+<td>Эксплуатационные числа</td>
+<td>Δ_empty 0.068/0.024; retention 54%/70%; 35k записей</td>
+<td>в <code>paper.py</code> как эталон; full-scale воспроизведение — на GPU</td>
+<td>✗ (числа зафиксированы)</td>
+</tr>
+<tr>
+<td>Hot-row guard (форматные строки)</td>
+<td>в статье — наблюдение и разбор отказа</td>
+<td><strong>+</strong> <code>guards</code> (капы норм/бюджеты) и hot-row метрики — расширение сверх статьи</td>
+<td>+</td>
+</tr>
+<tr>
+<td>Safety-gate публикации</td>
+<td>в статье отсутствует</td>
+<td><strong>+</strong> <code>publish_check</code> (verify+drift+hot-rows), подписи ed25519</td>
+<td>+</td>
+</tr>
+<tr>
+<td>Мониторинг</td>
+<td>в статье отсутствует</td>
+<td><strong>+</strong> <code>MetricsRegistry</code> + <code>atomicng monitor</code> — self-contained HTML-отчёт (SVG-гистограмма норм = визуальный hot-row детектор, без JS-зависимостей)</td>
+<td>+</td>
+</tr>
+<tr>
+<td>Экспорт в движки</td>
+<td>в статье — vLLM-патч (third_party)</td>
+<td><strong>+</strong> <code>export-ple</code>: полная таблица T⁰+Δ в документированный бинарный формат (DNGPLE01, sha256-integrity) для llama.cpp-движков; vLLM-ридер — v0.4/Track B</td>
+<td>+</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_3">Известные осознанные отклонения (реестр)</h2>
+<ol>
+<li><strong>Sidecar vs native</strong>: статья пишет в заводскую таблицу модели; наш Track A подключает
+   внешнюю таблицу с собственной проекцией чтения (<code>SidecarTable.proj</code>). Это замена
+   недоступного нативного read-out, а не изменение метода; Track B (v1.0) закроет нативный путь.</li>
+<li><strong>Mini-конфиги CPU</strong>: блоки 64–96/префикс 16–24, группы &lt;12 траекторий, hidden 64 вместо 256 —
+   всегда задаются ЯВНО аргументами (дефолты функций остаются бумажными: 512/128/3e-4).</li>
+<li><strong>tanh-ограничение целей</strong>: opt-in (<code>bound_targets=True</code>), дефолт — линейные цели как в статье.</li>
+<li><strong>plain-writer gap</strong>: реализована delta-оркестрация; batchable plain-режим запланирован
+   (влияет на скорость инференса записи, не на математику).</li>
+<li><strong>Калибровка s_h</strong>: практическая (шум-проба) — точное распределение входов при калибровке
+   в статье не специфицировано.</li>
+</ol>
+<h2 id="_4">Как поддерживать файл</h2>
+<p>Любое изменение, затрагивающее перечисленные элементы, обязано: (а) обновить строку таблицы,
+(б) обновить/добавить conformance-тест, (в) при новом отклонении — внести в реестр с мотивацией.
+Запрос «контролируй соответствие статье» означает: прогнать <code>pytest tests/test_fidelity.py</code>
+и сверить этот файл.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy", "navigation.instant"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1728 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AtomicNG — atomic forward-only continual writing into a language model's native n-gram memory (arXiv:2610.31125)">
+      
+      
+      
+        <link rel="canonical" href="https://akseleu-j.github.io/atomicng/CHANGELOG/">
+      
+      
+        <link rel="prev" href="../vllm/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Changelog - AtomicNG</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="AtomicNG" class="md-header__button md-logo" aria-label="AtomicNG" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 17H7V7h10m4 4V9h-2V7a2 2 0 0 0-2-2h-2V3h-2v2h-2V3H9v2H7c-1.11 0-2 .89-2 2v2H3v2h2v2H3v2h2v2a2 2 0 0 0 2 2h2v2h2v-2h2v2h2v-2h2a2 2 0 0 0 2-2v-2h2v-2h-2v-2m-6 2h-2v-2h2m2-2H9v6h6z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AtomicNG
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Akseleu-J/atomicng" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Akseleu-J/atomicng
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="AtomicNG" class="md-nav__button md-logo" aria-label="AtomicNG" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 17H7V7h10m4 4V9h-2V7a2 2 0 0 0-2-2h-2V3h-2v2h-2V3H9v2H7c-1.11 0-2 .89-2 2v2H3v2h2v2H3v2h2v2a2 2 0 0 0 2 2h2v2h2v-2h2v2h2v-2h2a2 2 0 0 0 2-2v-2h2v-2h-2v-2m-6 2h-2v-2h2m2-2H9v6h6z"/></svg>
+
+    </a>
+    AtomicNG
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Akseleu-J/atomicng" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Akseleu-J/atomicng
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CALIBRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration (live matrix)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FIDELITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper fidelity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vllm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    vLLM integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#100-2026-11-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [1.0.0] — 2026-11-05
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.0.0] — 2026-11-05">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added (итог 1.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Проверено живыми прогонами
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#090rc1-2026-11-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.9.0rc1] — 2026-11-04
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.9.0rc1] — 2026-11-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050a2-2026-11-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.5.0a2] — 2026-11-04
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.0a2] — 2026-11-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050a1-2026-11-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.5.0a1] — 2026-11-04
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.0a1] — 2026-11-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040a3-2026-11-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.4.0a3] — 2026-11-02
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0a3] — 2026-11-02">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#night-sessions-evidence-kaggle-010211" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Night sessions evidence (Kaggle, 01–02.11)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040a2-2026-11-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.4.0a2] — 2026-11-01
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0a2] — 2026-11-01">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040a1-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.4.0a1] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0a1] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#032a1-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.2a1] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.2a1] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#031a1-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.1a1] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.1a1] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030a1-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.0a1] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.0a1] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020a2-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.0a2] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0a2] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020a1-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.0a1] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0a1] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1.0] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.0] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#100-2026-11-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [1.0.0] — 2026-11-05
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.0.0] — 2026-11-05">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added (итог 1.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Проверено живыми прогонами
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#090rc1-2026-11-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.9.0rc1] — 2026-11-04
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.9.0rc1] — 2026-11-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050a2-2026-11-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.5.0a2] — 2026-11-04
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.0a2] — 2026-11-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050a1-2026-11-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.5.0a1] — 2026-11-04
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.0a1] — 2026-11-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040a3-2026-11-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.4.0a3] — 2026-11-02
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0a3] — 2026-11-02">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#night-sessions-evidence-kaggle-010211" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Night sessions evidence (Kaggle, 01–02.11)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040a2-2026-11-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.4.0a2] — 2026-11-01
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0a2] — 2026-11-01">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040a1-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.4.0a1] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0a1] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#032a1-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.2a1] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.2a1] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#031a1-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.1a1] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.1a1] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030a1-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.0a1] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.0a1] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020a2-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.0a2] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0a2] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020a1-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.0a1] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0a1] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010-2026-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1.0] — 2026-10-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.0] — 2026-10-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="changelog">Changelog</h1>
+<p>Формат — <a href="https://keepachangelog.com/ru/1.1.0/">Keep a Changelog</a>; версионирование — SemVer.</p>
+<h2 id="100-2026-11-05">[1.0.0] — 2026-11-05</h2>
+<p><strong>Первый стабильный релиз.</strong> Публичный API заморожен (golden-тест); матрица калибровки
+закрыта живыми прогонами на пяти средах (Windows-CPU, Linux-CPU ×2, CUDA T4, TPU-чип).</p>
+<h3 id="added-10">Added (итог 1.0)</h3>
+<ul>
+<li>Ядро NumPy без ML-фреймворков: T = T⁰ + Δ, D1 block averaging, атомарные guards,
+  побитовый откат (undo/journal + kill-switch), .dng-оверлеи (data-only + sha256 + ed25519);</li>
+<li>Writer'ы plain/delta (MLP по статье) + BPTT-тренер сквозь цепочку D1 (torch-CPU/CUDA/XLA);</li>
+<li>Нативный read-out Track B (<code>native.py</code>): 16 голов × d=160 → 2560 → value + gated key → 10240;</li>
+<li><strong>vLLM-мост</strong>: <code>vllm.general_plugins</code> entry-point + <code>atomicng export-vllm</code> (<a href="docs/vllm.md">docs/vllm.md</a>);</li>
+<li>Протоколы статьи: acquisition / distraction / chain; evidence-пайплайн 512/128;</li>
+<li>Мониторинг: WriteReport-метрики, JSONL/TensorBoard/W&amp;B, HTML-дашборд <code>atomicng monitor</code>;</li>
+<li>Реестр: PLE (llama.cpp) + vLLM экспорты; подписи артефактов ed25519;</li>
+<li>Бенчмарки-регрессии <code>atomicng bench</code>, safety-gate публикации, audit-лог;</li>
+<li>Docs-сайт (GitHub Pages), Colab TPU one-click, CI (core/torch/build) + publish workflow.</li>
+</ul>
+<h3 id="_1">Проверено живыми прогонами</h3>
+<ul>
+<li>85/85 тестов (Windows) · 72/72 (Linux+CUDA T4, Python 3.13) · бит-exact откат Δ на CUDA;</li>
+<li>Обучение writer'а на SmolLM2-135M: 860 шагов → <strong>acquisition Δ_empty +0.0422</strong>;</li>
+<li>D1-математика на TPU-чипе: 8.4 мс/итер (JAX, TPU_0);</li>
+<li>Полная история: CALIBRATION.md.</li>
+</ul>
+<h2 id="090rc1-2026-11-04">[0.9.0rc1] — 2026-11-04</h2>
+<p><strong>Кандидат на v1.0.0</strong>: публичный API заморожен (golden-тест <code>test_api_surface</code>); остались
+только внешние пункты — PyPI upload, Colab TPU прогон владельца, vLLM-стенд (RELEASE_CHECKLIST.md).</p>
+<h3 id="added">Added</h3>
+<ul>
+<li><strong>Docs-сайт</strong> (mkdocs Material): сборка из корневых MD единым скриптом
+  (<code>scripts/build_docs.py</code>), GitHub Pages workflow (<code>docs.yml</code>), nav: Home/Calibration/Fidelity/vLLM/Changelog.</li>
+<li><strong>Golden-тест публичного API</strong>: <code>__all__</code> заморожен; любое изменение — сознательное
+  (тест печатает добавленное/удалённое и требует пометки в CHANGELOG).</li>
+<li><code>examples/README.md</code> — витрина примеров (ноутбуки, протоколы, обученный writer из Release).</li>
+<li><code>RELEASE_CHECKLIST.md</code> — чеклист релиза v1.0.0 для владельца.</li>
+</ul>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li>Флейк <code>test_trainer_d1_chain_is_bptt</code>: guard для групп без градиентного пути +
+  детерминированные блоки (см. 0.5.0a1 — теперь и в main-тренере).</li>
+</ul>
+<h2 id="050a2-2026-11-04">[0.5.0a2] — 2026-11-04</h2>
+<h3 id="added_1">Added</h3>
+<ul>
+<li><strong>Нативный мост к vLLM</strong> (<code>vllm_bridge.py</code>, фишка стандартов ниши — интеграция с движком):</li>
+<li>entry-point <code>vllm.general_plugins</code> → <code>atomicng_ngram_overlay</code>: при старте <code>vllm serve</code>
+    плагин читает <code>VLLM_ATOMICNG_OVERLAY</code> и отдаёт провайдер merged-таблицы (T⁰+Δ);
+    без оверлея плагин безвреден; vllm как зависимость НЕ нужен (вызов односторонний);</li>
+<li>CLI <code>atomicng export-vllm</code>: merged таблица (.npz) + <code>vllm_config.json</code> c sha256-манифестом
+    и provenance (путь 1 — работает на любом движке уже сегодня);</li>
+<li><code>docs/vllm.md</code> — три пути интеграции + готовый черновик issue для upstream vLLM;</li>
+<li>6 тестов моста (merged-математика, env-провайдер, артефакты, entry-point в метаданных).</li>
+<li>README: бейджи (CI/license/python/Colab-TPU/vLLM), ссылки на CALIBRATION.md и one-click Colab.</li>
+</ul>
+<h2 id="050a1-2026-11-04">[0.5.0a1] — 2026-11-04</h2>
+<h3 id="added_2">Added</h3>
+<ul>
+<li><strong>Track B, ядро нативного адаптера</strong> (<code>native.py</code>): <code>NativeTableSpec</code> (16 голов 8+8, d=160,
+  зафиксировано статьёй), <code>native_head_rows</code>/<code>native_rows_all_heads</code> (16 адресов на позицию,
+  соли голов), <code>NativeReadOut</code> — read-out статьи: concat ℝ²⁵⁶⁰ → value-путь + gated key-путь
+  (RMSNorm, sign/√max floor, каузальный depthwise conv 4 тапа, dilation 3) → ℝ¹⁰²⁴⁰.
+  Композиция gated-пути — документированная интерпретация (FIDELITY ≈).</li>
+<li><strong>CALIBRATION.md</strong> — живая матрица производительности из реальных прогонов: Windows-CPU,
+  Kaggle-CPU, CUDA T4 (73 мс/группа), Colab 24-ядерный CPU (54 мс/группа), TPU-чип (JAX 0.11.2
+  виден; XLA-стенд отработал); обучение writer'а: 860 шагов CPU → первый acquisition +0.0422.</li>
+<li>Результаты Colab-TPU прогоны владельца — в evidence (<code>kaggle-evidence/colab-tpu/</code>).</li>
+</ul>
+<h3 id="fixed_1">Fixed</h3>
+<ul>
+<li><strong>Флейк test_trainer_d1_chain_is_bptt</strong>: случайные блоки могли не иметь общих строк →
+  нет градиентного пути. Теперь: guard в <code>WriterTrainer.train_group</code> (пропуск групп без пути,
+  синхронно с hf_training) + детерминированные блоки с повторами в тесте.</li>
+<li><code>test_gather_uses_memory</code>: torch.as_tensor для numpy-значений патча.</li>
+</ul>
+<h2 id="040a3-2026-11-02">[0.4.0a3] — 2026-11-02</h2>
+<h3 id="fixed_2">Fixed</h3>
+<ul>
+<li><strong>Device-баги, найденные ночными сессиями на Kaggle</strong> (GPU Tesla T4):</li>
+<li><code>SidecarHandle.forward_hidden</code>: input_ids теперь на устройстве модели (CUDA-модель падала
+    на CPU-индексах в embedding);</li>
+<li><code>SidecarTable.read()</code>: <code>.numpy()</code> только после <code>.cpu()</code> (CUDA-тензоры);</li>
+<li><code>SidecarTable.inject()</code>: read переносится на устройство proj.</li>
+<li><code>benchmarks.acquisition</code>: значения больше не округляются — дельты бит-в-бит согласованы
+  с NLL на любой платформе (тест сравнения дельт падал на другом BLAS из-за double-rounding).</li>
+<li><code>test_publish_gate</code> — самодостаточный YAML в tmp_path (не зависит от каталога configs/ репо;
+  в кернел-окружениях его нет).</li>
+</ul>
+<h3 id="night-sessions-evidence-kaggle-010211">Night sessions evidence (Kaggle, 01–02.11)</h3>
+<ul>
+<li>GPU (Tesla T4): CUDA-бэкенд откалиброван — BPTT-стенд loss 5.55→4.05, 73мс/группа;
+  pytest 70/72 (2 падения — исправлены в этой версии).</li>
+<li>CPU: полный бюджет 7.8ч — <strong>860 шагов обучения writer'а на SmolLM2-135M, loss 3.36→3.12
+  (min 1.606), первый настоящий acquisition Δ_empty=+0.0422</strong>; pytest 71/72.</li>
+<li>TPU: XLA-цепочка BPTT на чипе работает; сессия отменена на ~2ч (S0–S4 собраны).</li>
+</ul>
+<h2 id="040a2-2026-11-01">[0.4.0a2] — 2026-11-01</h2>
+<h3 id="added_3">Added</h3>
+<ul>
+<li><strong>Device-поддержка ночного TPU/GPU/CPU прогона</strong>: <code>HFWriterTrainer(..., device=...)</code> — модель,
+  writer и sidecar-таблица переносятся на устройство; все тензоры тренировки (блоки, цели,
+  arange, δ-словарь, маски) создаются на устройстве; <code>SidecarTable.to(device)</code>;
+  <code>SidecarHandle.nll</code> корректен для моделей на любом устройстве.</li>
+</ul>
+<h3 id="fixed_3">Fixed</h3>
+<ul>
+<li><code>SidecarHandle.nll</code>: индексы/arange теперь на устройстве логитов (CUDA-модели не падали раньше
+  только потому, что путь не проверялся).</li>
+</ul>
+<h2 id="040a1-2026-10-31">[0.4.0a1] — 2026-10-31</h2>
+<h3 id="added_4">Added</h3>
+<ul>
+<li><strong>Release engineering</strong>: <code>python -m build</code> собирает sdist+wheel; <code>twine check</code> PASSED;
+  wheel проверен установкой в чистый venv с запуском <code>atomicng smoke</code> (WHEEL_SMOKE_OK);
+  job <code>build</code> добавлен в CI.</li>
+<li><strong><code>notebooks/QUICKSTART.ipynb</code></strong>: ноутбук-визитка (базовый цикл, guards, протоколы,
+  safety-gate, HTML-монитор) — готов к Colab.</li>
+<li><strong><code>Dockerfile</code></strong>: python:3.12-slim, ядро без torch, <code>atomicng smoke</code> как часть сборки
+  (образ считается валидным только при зелёном smoke); <code>.dockerignore</code>.</li>
+<li><strong>Plain-режим кодирования</strong> (закрыт gap FIDELITY): <code>handle.write(..., memory_aware=False)</code> —
+  plain-вариант статьи: writer кодирует свидетельство на T⁰-only модели (нулевые Δ_j/c_j во
+  входе гейта), запись в память при этом обычная; delta-вариант — по умолчанию. Тест ловит
+  фактические входы writer'а в обоих режимах.</li>
+<li><strong><code>atomicng monitor</code></strong>: self-contained HTML-отчёт (<code>monitor_html.py</code>) — состояние Δ,
+  SVG-гистограмма норм строк (визуальный hot-row детектор), метрики записи (JSONL),
+  вердикт verify; без JS-зависимостей; годится как «сертификат здоровья» оверлея в .dng-zoo.</li>
+<li><strong><code>atomicng export-ple</code></strong> (<code>exporters.py</code>): полная таблица T⁰+Δ в бинарный формат
+  DNGPLE01 (header-json + float32 rows, sha256-integrity) для llama.cpp-движков;
+  строгая загрузка (magic/integrity/спека).</li>
+<li>Тестов: <strong>72</strong> (было 66).</li>
+</ul>
+<h3 id="fixed_4">Fixed</h3>
+<ul>
+<li>Циклический импорт monitor_html → atomicng (версия теперь берётся лениво).</li>
+</ul>
+<h2 id="032a1-2026-10-31">[0.3.2a1] — 2026-10-31</h2>
+<h3 id="added_5">Added</h3>
+<ul>
+<li><strong>Контроль соответствия статье (fidelity control)</strong>:</li>
+<li><code>paper.py</code> — канонические константы статьи (512/128, группа 12, AdamW 3e-4/clip 1/wd 0,
+    ρ=0.01, d=160, H=16=8+8, ≈4 075 681 параметров writer'а, эталонные Δ_empty/retention) —
+    единственный источник истины;</li>
+<li><code>tests/test_fidelity.py</code> (12 тестов): формулы D1 сверяются с уравнениями статьи буквально,
+    состав входа гейта, признаки Eq. 7, число параметров writer'а (±5% на нативной конфигурации),
+    калибровка ρ, дефолты тренеров и evidence, дефолт α=1;</li>
+<li><strong>FIDELITY.md</strong> — по-элементная таблица «статья ↔ AtomicNG» (✓/≈/✗/+), реестр осознанных
+    отклонений с мотивацией, clean-room политика по официальному репозиторию (нет лицензии —
+    код не читался, контроль по статье + публичному README).</li>
+<li><strong>WriterMLP: соответствие статье усилено</strong> — цели линейны по умолчанию (v = s_h·V_θ(x),
+  как в статье; tanh теперь opt-in <code>bound_targets=True</code>); <code>calibrate_to_table(t0)</code> реализует
+  калибровку s_h по ρ=0.01·RMS(T⁰_h).</li>
+<li><strong>Подпись артефактов (S1)</strong>: <code>signing.py</code> — detached ed25519-подписи оверлеев и writer-чекпоинтов
+  (<code>generate_keypair</code> / <code>sign_file</code> / <code>verify_file</code>); порча ловится манифестом, подмена — подписью.</li>
+<li>Тестов: <strong>66</strong> (было 54).</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li>WriterMLP <code>target_scale</code> по умолчанию не ограничивает цели (tanh opt-in); конфиг writer-артефакта
+  несёт <code>bound_targets</code> для точного round-trip.</li>
+</ul>
+<h2 id="031a1-2026-10-31">[0.3.1a1] — 2026-10-31</h2>
+<h3 id="added_6">Added</h3>
+<ul>
+<li><strong>HFWriterTrainer</strong> (<code>writers/hf_training.py</code>): обучение writer'а на настоящей HF-модели —
+  Δ входит в forward дифференцируемым инжектом перед слоем L, градиент течёт СКВОЗЬ
+  замороженные модель и proj в θ writer'а (BPTT сквозь цепочку D1); loss — CE на продолжении
+  блока (query-префикс по протоколу статьи); группы без градиентного пути (например,
+  одиночный блок) корректно пропускаются.</li>
+<li><strong><code>SidecarHandle.nll</code></strong>: средний NLL (nats/token) при текущей памяти — eval-примитив
+  для acquisition на настоящих моделях.</li>
+<li><strong><code>scripts/train_writer.py</code></strong>: полный пайплайн v0.3.1 — корпус (абзацы) → блоки →
+  BPTT-обучение → чекпоинт safetensors (+ provenance: model_id, corpus_sha256) →
+  eval acquisition на удержанных документах.</li>
+<li><strong>Тесты: 54</strong>: шаги HF-тренера на tiny-random Llama, градиенты конечны и доходят до
+  writer'а, модель остаётся замороженной, чекпоинт round-trip, NLL меняется от памяти.</li>
+<li>Первый <strong>обученный writer-чекпоинт AtomicNG</strong>: SmolLM2-135M (Llama-архитектура) +
+  реальный корпус (Gutenberg, public domain), CPU-mini конфиг.</li>
+</ul>
+<h3 id="fixed_5">Fixed</h3>
+<ul>
+<li><code>no_grad</code> вокруг writer'а в записи блока рвал BPTT-граф (градиент не доходил до θ);
+  <code>counts_t</code> лишний unsqueeze (4-D вместо 3-D); Ĥ-хук уже даёт (B,T,Hd) — двойной unsqueeze.</li>
+</ul>
+<h2 id="030a1-2026-10-31">[0.3.0a1] — 2026-10-31</h2>
+<h3 id="added_7">Added</h3>
+<ul>
+<li><strong>Реестр протоколов статьи</strong> (<code>benchmarks.py</code>, T5): <code>acquisition</code> (Δ_empty/Δ_donor),
+  <code>distraction</code> (retention@k), <code>chain</code> (drift на нейтральных пробах + recall + stability),
+  <code>run_suite</code>. Все протоколы снапшотят и восстанавливают патч, бэкенд-агностичны
+  (модели нужен <code>nll(seqs)</code>).</li>
+<li><strong>NLL-интерфейс TinyModel</strong>: <code>token_logits</code> (словарная голова <code>w_vocab</code>), <code>nll(seqs)</code>.</li>
+<li><strong>Артефакты writer'а</strong> (<code>writers/io.py</code>): safetensors (data-only, без pickle — S1),
+  конфиг архитектуры в метаданных, строгая валидация версии, <code>writer_fingerprint</code>
+  (sha256 state_dict для provenance).</li>
+<li><strong>CLI</strong>: <code>atomicng eval --suite quick|acquisition|distraction|chain --json report.json</code>;
+  пример в <code>examples/</code>.</li>
+<li><strong>Тесты: 51</strong> (было 40), в том числе:</li>
+<li>протоколы: консистентность дельт, восстановление состояния, кривые цепочки;</li>
+<li>writer-артефакты: round-trip, отказ на чужой версии, различимость fingerprint'ов;</li>
+<li><strong>настоящая HF-модель</strong> (<code>hf-internal-testing/tiny-random-LlamaForCausalLM</code>): attach →
+    write → выход изменился → clear → <strong>побитово</strong> вернулся → overlay round-trip. Первый
+    прогон backends.hf за пределами стаба (при отсутствии сети — skip);</li>
+<li><strong>направление Δ_empty &gt; 0</strong>: память от writer'а после BPTT-обучения снижает NLL
+    траектории против пустой памяти (на мини-стенде TorchTinyModel).</li>
+</ul>
+<h3 id="changed_1">Changed</h3>
+<ul>
+<li>torch-extra теперь включает <code>safetensors&gt;=0.4</code>.</li>
+</ul>
+<h2 id="020a2-2026-10-31">[0.2.0a2] — 2026-10-31</h2>
+<h3 id="changed_2">Changed</h3>
+<ul>
+<li><strong>Бренд: проект переименован <code>dng</code> → <code>atomicng</code> (AtomicNG — Atomic N-gram Memory)</strong> по
+  решению владельца: «atomic» — личный бренд и обязателен в названии. Переименованы пакет,
+  импорт, CLI (<code>atomicng</code>), формат оверлея (<code>atomicng-overlay</code>), спека (<code>atomicng-spec</code>);
+  README/CHANGELOG/CI/планы обновлены. Название метода статьи «Delta N-gram» при цитировании
+  сохранено. Публичного API-обещания на старом имени не существовало (pre-release).</li>
+</ul>
+<h2 id="020a1-2026-10-31">[0.2.0a1] — 2026-10-31</h2>
+<h3 id="added_8">Added</h3>
+<ul>
+<li><strong>Guards (P0)</strong>: <code>WritePolicies</code> — row_budget / write_budget (жёсткие, атомарный отказ),
+  hot_row_norm_cap (мягкий) и hard_row_norm_cap; двухфазное применение D1 (вычисление+валидация
+  до фиксации).</li>
+<li><strong>Evidence-пайплайн</strong>: <code>build_blocks</code> (512 токенов / query-префикс 128, протокол статьи),
+  <code>ByteTokenizer</code> — закрывает пробел «документ → события записи», отсутствующий у конкурентов.</li>
+<li><strong>Мониторинг</strong>: <code>MetricsRegistry</code> + экспортёры JSONL / TensorBoard / W&amp;B (ленивые);
+  по-записные метрики (гейты, нормы, hot-rows, reuse_ratio, events/s) и агрегаты.</li>
+<li><strong>Bench + регресс-гейт</strong>: <code>atomicng bench</code> — write throughput, read overhead, verify-время;
+  <code>check_regression</code> для CI.</li>
+<li><strong>Safety-gate публикации</strong> (<code>atomicng publish</code>): verify + drift на нейтральных пробах + hot-rows;
+  нейтральные пробы генерируются один раз и не адресуют строки патча (<code>neutral_token_seqs</code>).</li>
+<li><strong>Torch-слой</strong>: <code>WriterMLP</code> (V_θ/B_θ, 2×256, гейт σ([x, Δ, v−Δ, log(1+c)]), tanh-масштаб целей),
+  <code>TorchTinyModel</code> + <code>WriterTrainer</code> (BPTT сквозь цепочку D1, один backward на группу,
+  AdamW 3e-4/clip 1, grad-stop на Ĥ), <code>backends.hf.attach_sidecar</code> (hooks-инжект перед слоем L,
+  захват Ĥ, stub causal-LM для тестов без весов).</li>
+<li><strong>Integrity оверлеев</strong>: sha256-манифест внутри .atomicng (порча → отказ загрузки), merge по
+  D1-политике, provenance (sources), created_by.</li>
+<li><strong>CLI</strong>: write / stats / verify / merge / bench / publish / smoke; YAML-конфиги
+  (<code>configs/write_default.yaml</code>, <code>configs/publish_strict.yaml</code>).</li>
+<li>Исключения с подсказками (<code>atomicng.exceptions</code>), py.typed, CI (core + torch jobs), ruff.</li>
+</ul>
+<h3 id="changed_3">Changed</h3>
+<ul>
+<li>verify/publish используют нейтральные пробы (на плотной sidecar-таблице случайные пробы
+  легитимно задевают записанные строки — это эффект памяти, а не нарушение).</li>
+<li>D1Rule: лимиты перенесены в WritePolicies (конструктор чистый).</li>
+</ul>
+<h2 id="010-2026-10-31">[0.1.0] — 2026-10-31</h2>
+<h3 id="added_9">Added</h3>
+<ul>
+<li>Core на чистом NumPy: TableSpec, MemoryPatch (ленивый decay, snapshot/restore,
+  overlay round-trip), D1 (block averaging) + property-тесты (выпуклость, ограниченность,
+  порядок-инвариантность), undo через pre-image журнал, audit-лог, verify_deletion,
+  TinyModel, CLI smoke.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy", "navigation.instant"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>
