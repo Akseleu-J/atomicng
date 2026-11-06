@@ -6,4 +6,4 @@ tests/test_native.py::test_gather_uses_memory
     piece = piece + extra
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-85 passed, 1 warning in 73.29s (0:01:13)
+85 passed, 1 warning in 59.70s

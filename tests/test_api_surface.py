@@ -84,6 +84,6 @@ def test_public_api_frozen():
 
 
 def test_version_semver_pre1():
-    parts = atomicng.__version__.split(".")
-    assert len(parts) >= 3 and parts[0].isdigit()
-    assert int(parts[0]) < 1, "v1.0 — обнови этот тест при мажорном релизе"
+    """v1.0.0 — первый стабильный тег: мажор должен быть 1 (обновляется при мажорных релизах)."""
+    major = int(atomicng.__version__.split(".")[0])
+    assert major == 1, f"ожидался мажор 1 (v1.0.0), получено {atomicng.__version__}"

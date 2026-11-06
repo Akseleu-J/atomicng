@@ -2,6 +2,29 @@
 
 Формат — [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/); версионирование — SemVer.
 
+## [1.0.0] — 2026-11-05
+
+**Первый стабильный релиз.** Публичный API заморожен (golden-тест); матрица калибровки
+закрыта живыми прогонами на пяти средах (Windows-CPU, Linux-CPU ×2, CUDA T4, TPU-чип).
+
+### Added (итог 1.0)
+- Ядро NumPy без ML-фреймворков: T = T⁰ + Δ, D1 block averaging, атомарные guards,
+  побитовый откат (undo/journal + kill-switch), .dng-оверлеи (data-only + sha256 + ed25519);
+- Writer'ы plain/delta (MLP по статье) + BPTT-тренер сквозь цепочку D1 (torch-CPU/CUDA/XLA);
+- Нативный read-out Track B (`native.py`): 16 голов × d=160 → 2560 → value + gated key → 10240;
+- **vLLM-мост**: `vllm.general_plugins` entry-point + `atomicng export-vllm` ([docs/vllm.md](docs/vllm.md));
+- Протоколы статьи: acquisition / distraction / chain; evidence-пайплайн 512/128;
+- Мониторинг: WriteReport-метрики, JSONL/TensorBoard/W&B, HTML-дашборд `atomicng monitor`;
+- Реестр: PLE (llama.cpp) + vLLM экспорты; подписи артефактов ed25519;
+- Бенчмарки-регрессии `atomicng bench`, safety-gate публикации, audit-лог;
+- Docs-сайт (GitHub Pages), Colab TPU one-click, CI (core/torch/build) + publish workflow.
+
+### Проверено живыми прогонами
+- 85/85 тестов (Windows) · 72/72 (Linux+CUDA T4, Python 3.13) · бит-exact откат Δ на CUDA;
+- Обучение writer'а на SmolLM2-135M: 860 шагов → **acquisition Δ_empty +0.0422**;
+- D1-математика на TPU-чипе: 8.4 мс/итер (JAX, TPU_0);
+- Полная история: CALIBRATION.md.
+
 ## [0.9.0rc1] — 2026-11-04
 
 **Кандидат на v1.0.0**: публичный API заморожен (golden-тест `test_api_surface`); остались

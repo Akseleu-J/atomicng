@@ -39,14 +39,20 @@ def test_head_rows_deterministic_and_separated():
 
 
 def test_readout_shapes_and_paper_dims():
+    """Paper-размерности (out 10240) проверяем на meta-устройстве — без аллокации 200 МБ."""
     spec = NativeTableSpec()
-    ro = NativeReadOut(spec, out_dim=10240)
-    b, t = 2, 12
-    rows = torch.randn(b, t, spec.concat_dim)
-    out = ro(rows)
-    assert out.shape == (b, t, 10240)
+    with torch.device("meta"):
+        ro = NativeReadOut(spec, out_dim=10240)
+    assert ro.value.weight.shape == (10240, 2560)
+    assert ro.key.weight.shape == (10240, 2560)
     assert ro.conv.weight.numel() == 10240 * 4  # depthwise: канал × kernel 4
     assert ro.conv.dilation == (3,) and ro.conv.groups == 10240
+    assert ro.conv.padding == (0,)  # каузальность обеспечивается явным паддингом в forward
+
+    # реальный forward на маленьком out_dim (та же логика, меньше память)
+    ro_small = NativeReadOut(spec, out_dim=64)
+    out = ro_small(torch.randn(2, 12, spec.concat_dim))
+    assert out.shape == (2, 12, 64)
 
 
 def test_gather_uses_memory():

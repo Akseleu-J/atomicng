@@ -171,6 +171,10 @@ def test_paper_constants_sane():
 
 
 def test_signing_roundtrip_and_tamper(tmp_path):
+    try:
+        import cryptography  # noqa: F401
+    except ImportError:
+        pytest.skip("cryptography не установлен — signing-тесты пропущены")
     private_pem, public_pem = atomicng.signing.generate_keypair()
     f = tmp_path / "overlay.dng.npz"
     f.write_bytes(b"atomicng overlay bytes")
@@ -186,6 +190,10 @@ def test_signing_roundtrip_and_tamper(tmp_path):
 
 
 def test_signing_rejects_wrong_key(tmp_path):
+    try:
+        import cryptography  # noqa: F401
+    except ImportError:
+        pytest.skip("cryptography не установлен — signing-тесты пропущены")
     private_a, _ = atomicng.signing.generate_keypair()
     _, public_b = atomicng.signing.generate_keypair()
     f = tmp_path / "x.bin"

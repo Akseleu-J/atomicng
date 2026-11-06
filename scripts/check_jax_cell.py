@@ -43,7 +43,7 @@ def step_fn(params, delta):
 
 delta = jnp.zeros((N, d))
 losses, times = [], []
-for step in range(3):
+for _step in range(3):
     t0 = time.perf_counter()
     params, delta, ce = step_fn(params, delta)
     jax.block_until_ready(ce)
