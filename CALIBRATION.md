@@ -48,6 +48,17 @@
   отчёт: `kaggle-evidence/colab-tpu/results/S3b_accel_jax.json`;
 - BPTT-обучение на чипе — XLA-путь после restart'а пары (ячейка xla_install в ноутбуке).
 
+## vLLM (Linux GPU, Kaggle T4)
+
+- **Экспорт артефактов на Linux GPU — OK**: `export_for_vllm` → `ngram_table_merged.npz` +
+  `vllm_config.json` (sha256, provenance) — путь 1 работает на целевой платформе;
+- **Движок vLLM — OK**: установка через **uv-venv** (обход конфликта vllm↔предустановленный
+  torch Кагла), `facebook/opt-125m` запущен и сгенерировал текст на T4
+  (**21.4 tok/s output**); артефакты AtomicNG присутствуют в том же окружении;
+- Хук merged-таблицы в граф движка — Track B/upstream (docs/vllm.md, путь 3);
+- Урок для пользователей: на образах с предустановленным torch ставьте vllm через
+  uv-venv (пример — `kaggle-night-vllm/verify_vllm3.py`).
+
 ## Известные ограничения
 
 - Бит-точность отката на CUDA требует deterministic-режима (на CPU бит-точность без флагов);
