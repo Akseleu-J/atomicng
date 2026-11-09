@@ -94,7 +94,7 @@ rows = [
     ("Linux CPU (Kaggle)", "72/72", "—", "860 steps → acquisition +0.0422"),
     ("Linux CUDA T4", "72/72", "73 ms / group", "bit-exact Δ rollback"),
     ("Colab TPU-VM CPU", "—", "54 ms / group", "2 training runs, min loss 1.60"),
-    ("TPU chip (JAX)", "—", "8.4 ms / iter", "D1 math on chip"),
+    ("TPU chip (JAX)", "+", "8.4 ms / iter", "D1 math on chip"),
 ]
 # заголовок
 for x, label in zip(cols, ["Environment", "pytest", "BPTT stand", "Training"]):
