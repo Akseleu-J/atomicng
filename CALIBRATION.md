@@ -1,66 +1,53 @@
-# CALIBRATION — живая матрица производительности и совместимости
+# AtomicNG calibration
 
-Все цифры — из реальных прогонов (evidence: `kaggle-evidence/`), не из бенчмарков «на бумаге».
-Фреймворк: AtomicNG 0.4.0a3 / 0.5.0a1; метод arXiv:2610.31125.
+These figures come from recorded AtomicNG 0.4.0a3 and 0.5.0a1 runs. The original evidence references point to the accompanying `kaggle-evidence/` directory.
 
-## Матрица сред
+## Environment matrix
 
-| Среда | Python | torch | Ядра/устройство | pytest | BPTT-стенд (4-бл. группа) | Обучение writer'а |
+| Environment | Python | PyTorch | Cores or device | pytest | BPTT harness (four-block group) | Writer training |
 |---|---|---|---|---|---|---|
-| Windows 10, CPU (локальная) | 3.12 | 2.x+cpu | 8 ядер | **72/72** | ~50 с/группа | 40 шагов ≈ 100 мин |
-| Kaggle Linux, CPU | 3.13 | 2.11+cpu | 4 ядра | **71/72** * | (S2 упал — import os, исправлено) | 860 шагов за 7.8ч |
-| Kaggle Linux, CUDA T4 | 3.13 | 2.11+cu128 | Tesla T4 | **72/72** | **73 мс/группа** (~2000× CPU) | не дошло (device-баги → исправлено в 0.4.0a3) |
-| Colab Linux, CPU | 3.13 | 2.14+cpu | 24 ядра | не запускался | 54 мс/группа **¹** | 157 шагов за 45 мин, loss min 1.6025 |
-| Colab TPU-чип (JAX виден) | 3.13 | — | TpuDevice(id=0) | — | XLA-путь: калибровка через torch_xla на стороне владельца **²** | — |
+| Windows 10, local CPU | 3.12 | 2.x+cpu | 8 cores | **72/72** | ~50 s/group | 40 steps in ~100 min |
+| Kaggle Linux, CPU | 3.13 | 2.11+cpu | 4 cores | **71/72** ¹ | S2 failed on a missing `os` import, later fixed | 860 steps in 7.8 h |
+| Kaggle Linux, CUDA | 3.13 | 2.11+cu128 | Tesla T4 | **72/72** | **73 ms/group** (reported as ~2,000× CPU in that run) | Stopped before training because of device issues fixed in 0.4.0a3 |
+| Colab Linux, CPU | 3.13 | 2.14+cpu | 24 cores | Not run | 54 ms/group ² | 157 steps in 45 min, minimum loss 1.6025 |
+| Colab TPU | 3.13 | — | `TpuDevice(id=0)` | — | JAX detected the TPU. See the TPU notes below for the XLA path. | — |
 
-\* единственное падение — test_publish_gate, зависевший от пути configs/ репо; исправлен
-(самодостаточный YAML) и подтверждён верификацией 72/72 на Linux+CUDA.
-**¹** в S0 первого прогона torch_xla отсутствовал, S3-отчёт тем не менее записан — владелец
-запускал ячейки в своём порядке; цифра предварительная.
+¹ The sole failure was `test_publish_gate`, which depended on the repository's `configs/` path. The fix uses self-contained YAML and passed verification on Linux with CUDA.
 
-## Верификация 0.4.0a3 на Linux+CUDA (T4, Python 3.13) — GREEN
+² Preliminary. The first run lacked `torch_xla` at S0, but recorded an S3 report after the notebook cells were run out of order.
 
-- pytest **72/72** (оба блокера ночной сессии закрыты: acquisition без округлений,
-  publish_gate с самодостаточным YAML);
-- attach → write → nll на cuda; **очистка Δ возвращает выходы бит-в-бит** (max_diff 0.0,
-  deterministic-режим CUDA + CUBLAS_WORKSPACE_CONFIG).
+## Linux CUDA verification for 0.4.0a3
 
-## Обучение writer'а на SmolLM2-135M (sidecar 4096×16, seed 17)
+- The Tesla T4 run on Python 3.13 passed **72 of 72 tests**. The acquisition check avoided rounding and the publication gate used self-contained YAML.
+- The CUDA path exercised attach, write, and NLL evaluation. Clearing `Δ` restored outputs bit for bit (`max_diff = 0.0`) with deterministic CUDA mode and `CUBLAS_WORKSPACE_CONFIG`.
 
-| Прогон | Шагов | Loss | Acquisition Δ_empty |
+## SmolLM2-135M writer training
+
+The sidecar used a 4096×16 table and seed 17.
+
+| Run | Steps | Loss | Acquisition Δ_empty |
 |---|---|---|---|
-| Kaggle CPU, 7.8ч | 860 | 3.36 → 3.12 (min 1.606) | **+0.0422** (doc 1), ост. 0 |
-| Colab TPU-VM, 45 мин (прогон 1) | 157 | 3.36 → ~2.7–3.4 (min 1.6025) | −0.0272…0 (шагов мало) |
-| Colab TPU-VM, 45 мин (прогон 2) | 156 | 3.35 → ~2.4–3.4 (min 1.6116) | −0.0173…+0.0147 (mean +0.0024) |
+| Kaggle CPU, 7.8 h | 860 | 3.36 → 3.12 (min 1.606) | **+0.0422** on document 1, 0 on the others |
+| Colab TPU VM, 45 min (run 1) | 157 | 3.36 → ~2.7–3.4 (min 1.6025) | −0.0272 to 0 |
+| Colab TPU VM, 45 min (run 2) | 156 | 3.35 → ~2.4–3.4 (min 1.6116) | −0.0173 to +0.0147 (mean +0.0024) |
 
-Вывод: сигнал acquisition появляется после нескольких сотен шагов; для статья-масштаба
-(100M токенов) нужны часы GPU — путь отработан end-to-end.
+These runs exercised the end-to-end training path. The longest run showed a positive acquisition signal on one document. Reproducing the paper's 100-million-token training regime remains separate work.
 
-## TPU-чип
+## TPU results
 
-- Kaggle TPU-VM: XLA BPTT-цепочка **работает на чипе** (S3 OK, сессия отменена на 2ч);
-- Colab (v5e, Python 3.13, torch 2.14.1): чип виден через **JAX 0.11.2**; torch_xla из PyPI
-  не совпал по ABI с предустановленным torch (`_XLAC.so: undefined symbol`) — в ноутбуке
-  есть ячейка установки совпадающей пары + restart;
-- **S3b (JAX-путь, без torch_xla) — ВЫПОЛНЕНО НА ЧИПЕ** (владелец, 05.11): устройство
-  `TPU_0`, математика D1 (read T⁰+Δ → writer → D1-write) **8.4 мс/итерация**
-  (max 0.156с — JIT-компиляция первой итерации), loss конечен на 20 итерациях;
-  отчёт: `kaggle-evidence/colab-tpu/results/S3b_accel_jax.json`;
-- BPTT-обучение на чипе — XLA-путь после restart'а пары (ячейка xla_install в ноутбуке).
+- On Kaggle TPU VM, the XLA BPTT chain reached S3 on device. The session was canceled after two hours.
+- On Colab v5e with Python 3.13 and PyTorch 2.14.1, JAX 0.11.2 detected the TPU. The PyPI `torch_xla` build had an ABI mismatch with the preinstalled PyTorch (`_XLAC.so: undefined symbol`). The notebook includes a cell to install a matching pair and restart the runtime.
+- On 5 November, the owner ran S3b on `TPU_0` with JAX. The D1 read, writer, and write loop took **8.4 ms/iteration**. The maximum was 0.156 s, including first-iteration JIT compilation. Loss stayed finite across 20 iterations. The recorded report is `kaggle-evidence/colab-tpu/results/S3b_accel_jax.json`.
+- The notebook's XLA path is used for on-device BPTT training after restarting with the matching packages.
 
-## vLLM (Linux GPU, Kaggle T4)
+## vLLM on Kaggle Linux and Tesla T4
 
-- **Экспорт артефактов на Linux GPU — OK**: `export_for_vllm` → `ngram_table_merged.npz` +
-  `vllm_config.json` (sha256, provenance) — путь 1 работает на целевой платформе;
-- **Движок vLLM — OK**: установка через **uv-venv** (обход конфликта vllm↔предустановленный
-  torch Кагла), `facebook/opt-125m` запущен и сгенерировал текст на T4
-  (**21.4 tok/s output**); артефакты AtomicNG присутствуют в том же окружении;
-- Хук merged-таблицы в граф движка — Track B/upstream (docs/vllm.md, путь 3);
-- Урок для пользователей: на образах с предустановленным torch ставьте vllm через
-  uv-venv (пример — `kaggle-night-vllm/verify_vllm3.py`).
+- `export_for_vllm` generated `ngram_table_merged.npz` and `vllm_config.json` with SHA-256 and provenance on the target platform.
+- vLLM generated text with `facebook/opt-125m` at **21.4 output tokens/s** on a T4. AtomicNG artifacts were present in the same environment. An isolated `uv` virtual environment avoided the conflict with Kaggle's preinstalled PyTorch. See `kaggle-night-vllm/verify_vllm3.py`.
+- Loading the merged table into the engine graph remains Track B upstream work. See the [vLLM integration guide](docs/vllm.md).
 
-## Известные ограничения
+## Known limits
 
-- Бит-точность отката на CUDA требует deterministic-режима (на CPU бит-точность без флагов);
-- XLA: хэш биграмм остаётся на CPU (grad-stop интерфейс), тензоры на чипе;
-- vLLM-ридер — v0.4+/Linux (не калибровался).
+- Bit-exact CUDA restoration requires deterministic mode. CPU restoration does not require those flags.
+- The XLA path keeps bigram hashing on the CPU behind a gradient stop and places the tensors on the TPU.
+- The vLLM reader has yet to be calibrated.
