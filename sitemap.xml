@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://akseleu-j.github.io/atomicng/</loc>
+         <lastmod>2026-11-12</lastmod>
+    </url>
+    <url>
+         <loc>https://akseleu-j.github.io/atomicng/CALIBRATION/</loc>
+         <lastmod>2026-11-12</lastmod>
+    </url>
+    <url>
+         <loc>https://akseleu-j.github.io/atomicng/CHANGELOG/</loc>
+         <lastmod>2026-11-12</lastmod>
+    </url>
+    <url>
+         <loc>https://akseleu-j.github.io/atomicng/FIDELITY/</loc>
+         <lastmod>2026-11-12</lastmod>
+    </url>
+    <url>
+         <loc>https://akseleu-j.github.io/atomicng/vllm/</loc>
+         <lastmod>2026-11-12</lastmod>
+    </url>
+</urlset>
