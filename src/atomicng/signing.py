@@ -1,8 +1,7 @@
-"""Подпись артефактов (S1, P0): detached ed25519-подписи для .dng-оверлеев и writer-чекпоинтов.
+"""Sign and verify overlays and writer checkpoints with detached Ed25519 signatures.
 
-Модель как у релизов: приватный ключ у издателя, публичный — у потребителей; `verify_file`
-проверяет подпись байтов файла (манифест целостности внутри оверлея ловит случайную порчу,
-подпись — подмену). Требует `cryptography` (опциональная зависимость).
+Publishers retain the private key. Consumers verify the file bytes with the
+public key. The implementation uses the optional cryptography package.
 """
 from __future__ import annotations
 
@@ -14,18 +13,18 @@ try:
     from cryptography.exceptions import InvalidSignature
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-except ImportError:  # pragma: no cover — импорт при использовании, не при загрузке пакета
+except ImportError:  # pragma: no cover - import when using, not when loading a packet
     Ed25519PrivateKey = None  # type: ignore[assignment]
 
 
 def _require():
     if Ed25519PrivateKey is None:
-        raise BackendError("signing требует cryptography: pip install cryptography")
+        raise BackendError("Signing requires cryptography: pip install cryptography")
     return True
 
 
 def generate_keypair() -> tuple[bytes, bytes]:
-    """→ (private_pem, public_pem); приватный ключ хранит только издатель."""
+    """→ (private_pem, public_pem); The private key is only stored by the publisher.."""
     _require()
     key = Ed25519PrivateKey.generate()
     private_pem = key.private_bytes(
@@ -41,7 +40,7 @@ def generate_keypair() -> tuple[bytes, bytes]:
 
 
 def sign_file(path: str, private_pem: bytes) -> str:
-    """Подписывает байты файла detached-подписью, пишет `<path>.sig`, возвращает hex-подпись."""
+    """Signs bytes of the file with a detached signature, writes `<path>.sig`, returns hex signature."""
     _require()
     key = serialization.load_pem_private_key(private_pem, password=None)
     signature = key.sign(Path(path).read_bytes())
@@ -50,7 +49,7 @@ def sign_file(path: str, private_pem: bytes) -> str:
 
 
 def verify_file(path: str, public_pem: bytes) -> bool:
-    """Проверяет `<path>.sig` против байтов файла. Отсутствие подписи — не успех."""
+    """Checking. `<path>.sig` Not signing a file is not a success.."""
     _require()
     sig_path = Path(f"{path}.sig")
     if not sig_path.exists():

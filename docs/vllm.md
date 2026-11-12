@@ -1,26 +1,24 @@
-# AtomicNG × vLLM — нативная интеграция
+# AtomicNG and vLLM integration
 
-AtomicNG пишет новые знания в разреженный оверлей Δ (`T = T⁰ + Δ`), не трогая веса модели.
-vLLM читает n-gram таблицу при загрузке — мост доставляет оверлей в движок тремя путями.
+AtomicNG writes to a sparse overlay `Δ` while keeping the model weights and base n-gram table fixed. The effective table is `T = T⁰ + Δ`. This guide describes two integration paths and an upstream proposal.
 
-## Путь 1 — Merged table (рекомендован сегодня, работает везде)
+## 1. Export a merged table
 
-Собираешь полную таблицу T⁰+Δ и подмешиваешь при загрузке модели:
+Export the full table and load it before inference:
 
 ```sh
 pip install atomicng
 atomicng write --evidence docs.txt --overlay mem.atomicng.npz
 atomicng export-vllm --overlay mem.atomicng.npz --base-table t0.npz \
     --model-id Qwen3.8-Flash-Next --out ./vllm-artifacts
-# → vllm-artifacts/ngram_table_merged.npz + vllm_config.json (sha256-манифест)
+# Output: vllm-artifacts/ngram_table_merged.npz and vllm_config.json
 ```
 
-`vllm_config.json` содержит всё для раннера: путь merged-таблицы, спеку (N×d, головы),
-sha256, provenance. Раннер подмешивает таблицу до старта инференса — ноль оверхеда в рантайме.
+The configuration records the merged table path, table dimensions and heads, SHA-256, and provenance. The runner loads the merged table before inference, so it does not apply the overlay on each read.
 
-## Путь 2 — general plugin (vLLM ≥ 0.6)
+## 2. Use the general plugin
 
-Пакет регистрирует entry-point `vllm.general_plugins`. При старте сервера:
+AtomicNG registers a `vllm.general_plugins` entry point. To supply an overlay when starting the server:
 
 ```sh
 pip install atomicng
@@ -28,17 +26,13 @@ export VLLM_ATOMICNG_OVERLAY=/path/mem.atomicng.npz
 vllm serve <model> ...
 ```
 
-Плагин без оверлея безвреден (возвращает пустой dict), с оверлеем — отдаёт провайдер
-merged-таблицы: `atomicng_ngram_overlay(base_table, spec) → (T⁰+Δ, MemoryPatch)`.
+With no overlay configured, the plugin returns an empty dictionary. With an overlay, it provides `atomicng_ngram_overlay(base_table, spec)`, which returns the merged table and its `MemoryPatch`.
 
-## Путь 3 — upstream Engram (Track B, v1.0)
+## 3. Upstream Engram proposal
 
-Для моделей с заводской таблицей (Qwen3.8-Flash-Next класс) — PR в vLLM: загрузка .dng-оверлея
-в существующий Engram/PLE-кодопуть (`--ngram-overlay path`). Черновик issue — ниже.
+For models with a built-in n-gram table, the proposal adds `--ngram-overlay path` to the existing Engram/PLE load path.
 
----
-
-## Черновик issue для vllm-project/vllm (вставь при создании)
+## Draft issue for vllm-project/vllm
 
 **Title:** Feature: overlay support for n-gram/Engram sidecar tables (forward-only memory writes)
 
@@ -58,8 +52,8 @@ verification (72/72 tests, bit-exact restore) are published in the repo.
 Use cases: continual knowledge updates without retraining; per-tenant memory overlays
 (merge/revert via pre-image journal); A/B of knowledge versions by swapping overlays.
 
-## Совместимость
+## Compatibility
 
-- merged-таблица: float32 LE, shape (N, d) — совпадает со спекой оверлея;
-- плагин не импортирует vllm (зависимость односторонняя), тесты идут без vLLM;
-- калибровка на реальном vLLM — v0.4+/Linux-стенд (см. CALIBRATION.md).
+- The merged table uses little-endian float32 with shape `(N, d)`, matching the overlay specification.
+- The plugin does not import vLLM. The plugin tests can run without it.
+- See [CALIBRATION.md](../CALIBRATION.md) for the status of live vLLM calibration on Linux.

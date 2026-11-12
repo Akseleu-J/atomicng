@@ -1,4 +1,4 @@
-"""Локальная проверка S3b JAX-ячейки (исправленные скалярные гейты) — 3 итерации на CPU."""
+"""Locally validated S3b JAX cells (fixed scalar gates) – 3 iterations on the CPU."""
 import time
 
 import jax
@@ -27,14 +27,14 @@ def d1_block(params, delta):
     logits = h[:-1] @ params["w_out"]
     ce = -jax.nn.log_softmax(logits)[jnp.arange(T - 1), ids[1:]].mean()
     targets = jnp.tanh(h[1:] @ params["w"])
-    gates = jax.nn.sigmoid(jnp.full((targets.shape[0],), 0.5))  # скаляр на событие (T-1,)
+    gates = jax.nn.sigmoid(jnp.full((targets.shape[0],), 0.5))  # One scalar per event, shape (T-1,)
     return ce, targets, gates
 
 
 @jax.jit
 def step_fn(params, delta):
     ce, targets, gates = d1_block(params, delta)
-    a = (gates[:, None] * targets).mean(axis=0)  # гейт-скаляр × цель → A (d,)
+    a = (gates[:, None] * targets).mean(axis=0)  # gate scalar × target → A (d),)
     w = gates.mean()
     rows_j = jnp.asarray(rows_idx[1:])
     delta = delta.at[rows_j].set((1 - w) * delta[rows_j] + a[None, :])

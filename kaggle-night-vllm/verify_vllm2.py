@@ -1,5 +1,5 @@
-"""vLLM-калибровка v2: изолированный venv (vllm+torch внутри) — обходит конфликт
-с предустановленным torch Кагла. Стадии: S1 atomicng+export, S2 venv+import vllm,
+"""vLLM calibration v2: isolated venv (vllm+torch inside) – bypasses conflict
+Stages: S1 atomicng+export, S2 venv+import vllm,
 S3 serve smoke (opt-125m), S4 verdict."""
 import json
 import subprocess
@@ -31,7 +31,7 @@ def main() -> None:
     try:
         import glob
 
-        # S1: atomicng в базовом окружении → оверлей → артефакты (независимо от vllm)
+        # S1: Atomicng in Basic Environment → Overlays → Artifacts (regardless of vllm))
         wheels = sorted(glob.glob("/kaggle/input/**/atomicng-*.whl", recursive=True))
         subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", wheels[-1], "pyyaml"], check=True)
         import atomicng
@@ -45,18 +45,18 @@ def main() -> None:
         save("S1_export", {"status": "OK", "artifacts": sorted(p.name for p in out.iterdir()),
                            "delta_rows": cfg["n_delta_rows"], "sha256": cfg["sha256_table"][:16]})
 
-        # S2: изолированный venv → vllm (тянет свою torch-пару, не конфликтует с базой)
+        # S2: isolated venv → vllm (pulls its torch pair, does not conflict with the base))
         code, out = sh([sys.executable, "-m", "venv", str(VENV)], timeout=300)
         if code != 0:
             raise RuntimeError(f"venv: {out}")
         code, out = sh([VPY, "-m", "pip", "install", "--quiet", "--upgrade", "pip"], timeout=600)
-        save("S2_venv", {"status": "INSTALLING", "note": "venv создан; установка vllm (5–15 мин)"})
+        save("S2_venv", {"status": "INSTALLING", "note": "venv established; vllm installation (5–15 min))"})
         code, out = sh([VPY, "-m", "pip", "install", "--quiet", "vllm"], timeout=3600)
         if code != 0:
             raise RuntimeError(f"pip install vllm: {out}")
-        save("S2_venv", {"status": "OK", "note": "vllm установлен в изолированный venv"})
+        save("S2_venv", {"status": "OK", "note": "Vllm is installed in an isolated venv"})
 
-        # S3: serve smoke внутри venv
+        # S3: serve smoke inside venv
         smoke = (
             "import json\n"
             "import vllm\n"

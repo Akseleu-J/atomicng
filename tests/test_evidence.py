@@ -1,4 +1,4 @@
-"""Тесты evidence-пайплайна: блоки 512/128 по протоколу статьи, токенизатор."""
+"""Tests of evidence-pipeline: blocks 512/128 by the protocol of the article, tokenizer."""
 from __future__ import annotations
 
 import sys
@@ -17,7 +17,7 @@ def test_block_geometry():
     assert all(len(b.query) == 128 for b in blocks)
     assert all(len(b.query) + len(b.continuation) <= 512 for b in blocks)
     assert blocks[0].tokens == tokens[:512]
-    # stride по умолчанию 384 → начала 0, 384, 768
+    # stride default 384 → start 0, 384, 768
     assert blocks[1].tokens[0] == 384 and blocks[2].tokens[0] == 768
     assert [b.index for b in blocks] == [0, 1, 2]
     assert all(b.source == "doc" for b in blocks)
@@ -25,7 +25,7 @@ def test_block_geometry():
 
 def test_short_document_single_query_only_rejected():
     assert build_blocks([]) == []
-    assert build_blocks(list(range(50))) == []  # короче префикса — блоков нет
+    assert build_blocks(list(range(50))) == []  # shorter than the prefix - no blocks
 
 
 def test_invalid_geometry():

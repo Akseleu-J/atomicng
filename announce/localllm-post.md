@@ -1,15 +1,15 @@
-# r/LocalLLM — пост (практичная аудитория: локальные модели на своём железе)
+# r/LocalLLM — Post (practical audience: local models on your own hardware))
 
-**Заголовок:**
+**Title**
 Your local model can now *remember* — forward-only memory writes, no retraining, instant rollback (open source)
 
-**Тип:** Link → https://github.com/Akseleu-J/atomicng
+**Type:** Link → https://github.com/Akseleu-J/atomicng
 
-**Текст:**
+**Text:**
 
 Ever wanted your local LLM to actually *learn* a fact without fine-tuning — and be able to undo it completely?
 
-**AtomicNG** (Apache-2.0, just hit 1.0.0 on PyPI) implements a paper called "Delta N-gram": your model's n-gram sidecar table stays frozen, and new knowledge goes into a small sparse patch Δ. Writes are forward passes only — no gradients, no weight edits. **Clear the patch and the model is byte-identical to base.** No "unlearning" gymnastics — deletion is structural.
+**AtomicNG** (Apache-2.0, version 1.0.0) implements a paper called "Delta N-gram": your model's n-gram sidecar table stays frozen, and new knowledge goes into a small sparse patch Δ. Writes are forward passes only — no gradients, no weight edits. **Clear the patch and the model is byte-identical to base.** No "unlearning" gymnastics — deletion is structural.
 
 Quickstart (CPU, no GPU, pure NumPy core):
 

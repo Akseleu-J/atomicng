@@ -1,4 +1,4 @@
-"""Тесты guards (P0): бюджеты атомарны, капы работают, дефолт — no-op."""
+"""Test guards (P0): atomic budgets, caps work, default - no-op."""
 from __future__ import annotations
 
 import sys
@@ -23,7 +23,7 @@ def test_row_budget_atomic():
     before = patch.checksum()
     with pytest.raises(BudgetExceeded):
         rule.apply(patch, [_event(row=2), _event(row=3)], WritePolicies(row_budget=1))
-    assert patch.checksum() == before, "отказ по бюджету должен быть атомарным"
+    assert patch.checksum() == before, "Budget Failures Should Be Atomic"
 
 
 def test_write_budget_atomic():

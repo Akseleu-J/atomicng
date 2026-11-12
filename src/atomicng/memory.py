@@ -1,10 +1,8 @@
-"""Разреженный патч Δ поверх замороженной таблицы T⁰:  T = T⁰ + Δ.
+"""Sparse patch Δ over the frozen base table T⁰, with T = T⁰ + Δ.
 
-Инварианты (P0, S2):
-- T⁰ в MemoryPatch не хранится и недоступна для записи — патч знает только Δ;
-- хранятся только затронутые строки, счётчики записей и ленивый decay (block clock);
-- очистка патча структурно возвращает исходную модель;
-- .atomicng-оверлей — data-only артефакт с sha256-манифестом целостности (S1).
+MemoryPatch stores touched rows, write counters, and a clock for lazy decay.
+Clearing the patch restores the base behavior. Overlay artifacts store data
+and a SHA-256 integrity manifest.
 """
 from __future__ import annotations
 
@@ -33,7 +31,7 @@ def _arrays_checksum(row_ids: np.ndarray, deltas: np.ndarray, counts: np.ndarray
 class MemoryPatch:
     def __init__(self, spec: TableSpec, decay: float = 1.0, *, created_by: str = "") -> None:
         if not 0.0 < decay <= 1.0:
-            raise OverlayError(f"decay={decay} вне (0, 1]")
+            raise OverlayError(f"decay={decay} must be in (0, 1]")
         self.spec = spec
         self.decay = float(decay)
         self.created_by = created_by
@@ -41,9 +39,9 @@ class MemoryPatch:
         self._counts: dict[int, int] = {}
         self._last_touch: dict[int, int] = {}
         self._clock = 0
-        self.sources: list[str] = []  # provenance: идентификаторы записанных документов/партий
+        self.sources: list[str] = []  # provenance: IDs of written documents or batches
 
-    # ------------------------------------------------------------------ чтение
+    # ------------------------------------------------------------------ reading
 
     def __len__(self) -> int:
         return len(self._rows)
@@ -55,7 +53,7 @@ class MemoryPatch:
         return iter(self._rows)
 
     def get(self, row_id: int) -> np.ndarray:
-        """Эффективное значение Δ_j с учётом ленивого decay на текущем такте."""
+        """Effective value Δ_j with lazy decay on the current beat."""
         row = self._rows.get(row_id)
         if row is None:
             return np.zeros(self.spec.row_width, dtype=np.float32)
@@ -71,16 +69,16 @@ class MemoryPatch:
     def total_writes(self) -> int:
         return sum(self._counts.values())
 
-    # ---------------------------------------------------------- запись (rules)
+    # ---------------------------------------------------------- recording)
 
     def bump_clock(self) -> None:
-        """Новый блок записи: такт decay сдвигается на единицу."""
+        """New recording block: the decay clock shifts by one."""
         self._clock += 1
 
     def _write_row(self, row_id: int, value: np.ndarray) -> None:
         arr = np.asarray(value, dtype=np.float32)
         if arr.shape != (self.spec.row_width,):
-            raise OverlayError(f"ожидалась строка ширины {self.spec.row_width}, получено {arr.shape}")
+            raise OverlayError(f"Expected row width {self.spec.row_width}, got shape {arr.shape}.")
         self._rows[row_id] = arr
         self._last_touch[row_id] = self._clock
 
@@ -90,7 +88,7 @@ class MemoryPatch:
     def _set_row_state(
         self, row_id: int, value: np.ndarray | None, count: int, last_touch: int
     ) -> None:
-        """Прямое восстановление состояния строки (undo/restore). value=None → строка удаляется."""
+        """Direct restoration of the string state (undo/restore). Value=None → The line is deleted."""
         if value is None:
             self._rows.pop(row_id, None)
             self._counts.pop(row_id, None)
@@ -103,7 +101,7 @@ class MemoryPatch:
     # ------------------------------------------------------------ undo / verify
 
     def preimage(self, row_id: int) -> tuple[np.ndarray | None, int, int]:
-        """Состояние строки ДО записи блока: (значение|None, счётчик, last_touch)."""
+        """The state of the line before the block record: (value)|None, the counter, last._touch)."""
         if row_id not in self._rows:
             return None, 0, self._clock
         return self.get(row_id), self._counts[row_id], self._last_touch[row_id]
@@ -125,7 +123,7 @@ class MemoryPatch:
         self._last_touch.update(snap["last_touch"])
 
     def clear(self) -> None:
-        """Kill-switch: Δ=0, модель структурно равна базовой."""
+        """Kill-switch: Δ=0, model structurally equal to baseline."""
         self._rows.clear()
         self._counts.clear()
         self._last_touch.clear()
@@ -134,14 +132,14 @@ class MemoryPatch:
     # ----------------------------------------------------------------- merge
 
     def merge(self, other: MemoryPatch, gate: float = 0.5) -> dict:
-        """Слияние оверлеев по D1-политике: строки other — одиночные события с гейтом gate.
+        """D1 policy overlays: lines other - single gate events.
 
-        Возвращает отчёт. Спеки должны совпадать; пустой other — no-op.
+        Returns the report. Specks should match; empty other - no-op.
         """
-        from .rules.d1 import D1Rule, Event  # локальный импорт: rules зависят от memory
+        from .rules.d1 import D1Rule, Event  # Local import: rules depend on memory
 
         if other.spec != self.spec:
-            raise OverlayError(f"слияние: спека {other.spec.name!r} не совпадает с {self.spec.name!r}")
+            raise OverlayError(f"Cannot merge table specification {other.spec.name!r} into {self.spec.name!r}.")
         self.materialize()
         other.materialize()
         events = [Event(row_id=r, target=other._rows[r], gate=gate) for r in sorted(other._rows)]
@@ -149,7 +147,7 @@ class MemoryPatch:
         self.sources.append(f"merge@clock{self._clock}:{len(other._rows)}rows")
         return report.to_dict()
 
-    # ----------------------------------------------------------------- отчёт
+    # ----------------------------------------------------------------- report
 
     def stats(self) -> dict:
         norms = {r: float(np.linalg.norm(v)) for r, v in self._rows.items()}
@@ -167,23 +165,23 @@ class MemoryPatch:
         }
 
     def checksum(self) -> str:
-        """sha256 состояния патча (для audit-лога, verify и сравнения состояний)."""
+        """sha256 patch status (for audit log, verify and state comparison))."""
         rows = sorted(self._rows)
         ids = np.asarray(rows, dtype=np.int64)
         deltas = np.stack([self._rows[r] for r in rows]) if rows else np.zeros((0, self.spec.row_width), np.float32)
         counts = np.asarray([self._counts[r] for r in rows], dtype=np.int64)
         return _arrays_checksum(ids, deltas, counts, self._clock)
 
-    # ------------------------------------------------------------- оверлей .atomicng
+    # ------------------------------------------------------------- overlay
 
     def materialize(self) -> None:
-        """Применяет ленивый decay к хранимым значениям (перед сохранением/слиянием)."""
+        """Apply lazy decay to stored values before saving or merging."""
         for r in self._rows:
             self._rows[r] = self.get(r)
             self._last_touch[r] = self._clock
 
     def save_pretrained(self, path: str) -> None:
-        """Сохраняет .atomicng-оверлей: npz + json-метаданные + sha256-манифест (data-only)."""
+        """Saves .atomicng overlays: npz + json-metadata + sha256-manifesto (data-only))."""
         self.materialize()
         rows = sorted(self._rows)
         ids = np.asarray(rows, dtype=np.int64)
@@ -214,13 +212,13 @@ class MemoryPatch:
 
     @classmethod
     def load_pretrained(cls, path: str, spec: TableSpec | None = None) -> MemoryPatch:
-        """Строгая загрузка (S1): неизвестная версия или несовпадение sha256 → отказ."""
+        """Strict boot (S1): unknown version or mismatch of sha256 → failure."""
         with np.load(path, allow_pickle=False) as data:
             meta = json.loads(str(data["meta"]))
             if meta.get("overlay_format") != OVERLAY_FORMAT or meta.get("overlay_version") != OVERLAY_VERSION:
                 raise OverlayError(
-                    f"оверлей {path!r}: формат {meta.get('overlay_format')!r} "
-                    f"v{meta.get('overlay_version')} не поддерживается"
+                    f"overlay {path!r}: format {meta.get('overlay_format')!r} "
+                    f"v{meta.get('overlay_version')} unsupported"
                 )
             ids = np.asarray(data["row_ids"], dtype=np.int64)
             deltas = np.asarray(data["deltas"], dtype=np.float32)
@@ -228,16 +226,16 @@ class MemoryPatch:
             clock = int(meta["clock"])
             expected = meta.get("integrity")
             if expected is not None and _arrays_checksum(ids, deltas, counts, clock) != expected:
-                raise OverlayError(f"оверлей {path!r}: манифест целостности не совпал (файл повреждён)")
+                raise OverlayError(f"overlay {path!r}: integrity check failed")
 
             loaded_spec = TableSpec.from_json(json.dumps(meta["spec"]))
             if spec is not None and loaded_spec != spec:
                 raise OverlayError(
-                    f"спека оверлея {loaded_spec.name!r} не совпадает с ожидаемой {spec.name!r}"
+                    f"verley {loaded_spec.name!r} not consistent with the expected {spec.name!r}"
                 )
             if deltas.shape[1] != loaded_spec.row_width:
                 raise OverlayError(
-                    f"оверлей {path!r}: ширина строки {deltas.shape[1]} != {loaded_spec.row_width}"
+                    f"overlay {path!r}: linewidth {deltas.shape[1]} != {loaded_spec.row_width}"
                 )
             patch = cls(loaded_spec, decay=float(meta["decay"]), created_by=meta.get("created_by", ""))
             patch._clock = clock

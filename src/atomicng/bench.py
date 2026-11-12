@@ -1,8 +1,8 @@
-"""atomicng bench (P1): скорость записи, оверхед чтения, время verify + регресс-гейт.
+"""Benchmark write throughput, read overhead, and verification time.
 
-Модель-зависимая часть передаётся фабрикой; для tiny-бэкенда есть готовый раннер.
-Выход — JSON-отчёт; `check_regression` сравнивает с baseline с допуском и возвращает
-список нарушений (пустой = зелёный) — используется в CI как блокирующий гейт.
+Pass a model factory to benchmark a backend. The CLI has a runner for TinyModel.
+The benchmark returns a JSON-compatible report. check_regression compares that
+report with a baseline and returns any metrics outside the allowed tolerance.
 """
 from __future__ import annotations
 
@@ -23,8 +23,8 @@ def run_bench(
     repeats: int = 5,
     seed: int = 17,
 ) -> dict:
-    """Замеряет: write throughput (документы/события в сек), read overhead %, verify время."""
-    import atomicng  # локально: избегаем цикла в __init__
+    """Measure write throughput (documents and events per second), read overhead, and verification time."""
+    import atomicng  # Locally: Avoiding the cycle in __init__
 
     model = model_factory()
     writer = atomicng.HashWriter(model.spec)
@@ -41,7 +41,7 @@ def run_bench(
     write_s = time.perf_counter() - t0
     n_events = sum(r.n_events for r in reports)
 
-    # read overhead: чтение нейтральных проб с полным патчем vs с очищенным
+    # Read overhead: Read neutral samples with full patch vs with cleaned
     probe_fn = model.probe
     full_times: list[float] = []
     empty_times: list[float] = []
@@ -57,7 +57,7 @@ def run_bench(
         probe_fn(n_probes)
         empty_times.append(time.perf_counter() - t)
     model.memory.restore(snap)
-    assert model.memory.checksum() == checksum_before, "bench исказил патч"
+    assert model.memory.checksum() == checksum_before, "bench skewed the patch"
 
     full = statistics.median(full_times)
     empty = max(statistics.median(empty_times), 1e-9)
@@ -83,12 +83,12 @@ def save_baseline(report: dict, path: str) -> None:
 
 
 def check_regression(current: dict, baseline: dict, tolerance: float = 1.25) -> list[str]:
-    """Регресс-гейт: write медленнее baseline×tol или оверхед чтения вырос сверх baseline×tol → нарушение."""
+    """Regress Gate: Write slower baseline×tol or overhead reading grew over baseline×tol → violation."""
     failures: list[str] = []
     for key in ("write_events_per_s", "write_docs_per_s"):
         limit = baseline[key] / tolerance
         if current[key] < limit:
-            failures.append(f"{key}: {current[key]} < {limit:.2f} (baseline {baseline[key]}, допуск x{tolerance})")
+            failures.append(f"{key}: {current[key]} < {limit:.2f} (baseline {baseline[key]}, tolerance{tolerance})")
     limit_overhead = max(baseline["read_overhead_pct"], 1.0) * tolerance
     if current["read_overhead_pct"] > limit_overhead:
         failures.append(

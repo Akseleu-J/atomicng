@@ -1,8 +1,8 @@
-"""Направление статьи на мини-стенде: память, записанная ОБУЧЕННЫМ writer'ом, снижает NLL.
+"""Submission of the article on a mini-stand: memory recorded by a trained writer reduces NLL.
 
-Это torch-аналог Δ_empty > 0 из DEV64-протокола: HashWriter не обучен, поэтому направление
-проверяем на writer'е после BPTT-обучения (WriterTrainer): траектория проигрывается с записью
-памяти между блоками и без неё — с памятью продолжения должны предсказываться дешевле.
+It’s a torch analogue of Δ._empty > 0 from DEV64: HashWriter is not trained, so the direction
+Check on the writer after BPTT training (WriterTrainer): the trajectory is played with the record
+Memory between and without blocks – with memory, continuations should be predicted cheaper.
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ def _ce(model, block: torch.Tensor, delta_rows: torch.Tensor) -> float:
 
 def test_trained_writer_acquisition_positive():
     model, writer, trajectory, losses = _train_writer()
-    assert losses[-1] < losses[0], "обучение writer'а не прошло"
+    assert losses[-1] < losses[0], "The writer’s training has not passed"
 
     def loss_empty_memory() -> float:
         total = 0.0
@@ -54,7 +54,7 @@ def test_trained_writer_acquisition_positive():
         return total / len(trajectory)
 
     def loss_with_memory() -> float:
-        """Тот же проход, но writer пишет в память после каждого блока (Alg. 1, only-forward)."""
+        """The same passage, but the writer writes in memory after each block (Alg. 1, only-forward).)."""
         delta: dict[int, torch.Tensor] = {}
         counts: dict[int, int] = {}
         total = 0.0
@@ -83,5 +83,5 @@ def test_trained_writer_acquisition_positive():
         return total / len(trajectory)
 
     assert loss_with_memory() < loss_empty_memory(), (
-        "память от обученного writer'а должна снижать NLL траектории (Δ_empty > 0)"
+        "The memory of a trained writer should reduce the NLL trajectory (Δ)_empty > 0)"
     )

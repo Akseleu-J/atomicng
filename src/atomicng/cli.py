@@ -1,7 +1,7 @@
 """CLI atomicng (P2): write / stats / verify / merge / bench / publish / smoke / version.
 
-Конфиг — YAML (config-as-code, как у LLaMA-Factory). Все команды печатают JSON-отчёты
-или человекочитаемые сводки; коды выхода — контракты для CI.
+The CLI reads YAML configuration. Commands print JSON reports
+or human-readable summaries and return exit codes suitable for CI.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ import atomicng
 
 
 def _load_yaml(path: str) -> dict:
-    import yaml  # локально: pyyaml нужен только CLI
+    import yaml  # Import lazily because only the CLI needs PyYAML.
 
     with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
@@ -40,7 +40,7 @@ def _spec_from(cfg: dict) -> atomicng.TableSpec:
     return atomicng.TableSpec(**s)
 
 
-# ------------------------------------------------------------------ команды
+# ------------------------------------------------------------------ commands
 
 
 def cmd_write(args) -> int:
@@ -57,10 +57,10 @@ def cmd_write(args) -> int:
     try:
         texts = Path(args.evidence).read_text(encoding="utf-8").splitlines()
     except OSError as exc:
-        raise atomicng.AtomicNGError(f"файл свидетельства недоступен: {args.evidence!r} ({exc})") from exc
+        raise atomicng.AtomicNGError(f"Cannot read the evidence file: {args.evidence!r} ({exc})") from exc
     texts = [t.strip() for t in texts if t.strip()]
     if not texts:
-        raise atomicng.AtomicNGError(f"файл свидетельства пуст: {args.evidence!r}")
+        raise atomicng.AtomicNGError(f"The evidence file is empty: {args.evidence!r}")
     reports = []
     for i, doc in enumerate(texts):
         reports.append(
@@ -89,8 +89,8 @@ def cmd_stats(args) -> int:
 
 
 def cmd_verify(args) -> int:
-    """Статическая проверка целостности оверлея; рантайм-verify — через API/publish."""
-    patch = atomicng.MemoryPatch.load_pretrained(args.overlay)  # бросит OverlayError при порче
+    """Check the overlay on disk. Use the API or publish command for runtime verification."""
+    patch = atomicng.MemoryPatch.load_pretrained(args.overlay)  # Raises OverlayError if the overlay is corrupt.
     ok = True
     print(json.dumps({"overlay": args.overlay, "integrity": "ok", "rows": len(patch),
                       "total_writes": patch.total_writes}, ensure_ascii=False))
@@ -122,7 +122,7 @@ def cmd_bench(args) -> int:
 
 
 def cmd_publish(args) -> int:
-    """Safety-gate (S3) на tiny-бэкенде: verify + drift + hot-rows."""
+    """Check verification, drift, and hot rows on the tiny backend before publication."""
     model = atomicng.TinyModel()
     patch = atomicng.MemoryPatch.load_pretrained(args.overlay, model.spec)
     model.memory = patch
@@ -184,14 +184,14 @@ def cmd_smoke(args) -> int:
 
 
 def cmd_eval(args) -> int:
-    """Протоколы статьи (acquisition/distraction/chain) на tiny-бэкенде; HF — через API."""
+    """Run the paper's acquisition, distraction, and chain protocols on the tiny backend. Use the API for Hugging Face models."""
     try:
         docs = Path(args.evidence).read_text(encoding="utf-8").splitlines()
     except OSError as exc:
-        raise atomicng.AtomicNGError(f"файл свидетельства недоступен: {args.evidence!r} ({exc})") from exc
+        raise atomicng.AtomicNGError(f"Cannot read the evidence file: {args.evidence!r} ({exc})") from exc
     docs = [t.strip() for t in docs if t.strip()]
     if len(docs) < 2:
-        raise atomicng.AtomicNGError("для протоколов нужно ≥ 2 документов (строк) в файле")
+        raise atomicng.AtomicNGError("The evidence file must contain at least two documents, one per line.")
     if args.suite == "acquisition":
         report = {"acquisition": atomicng.acquisition(atomicng.TinyModel(), docs)}
     elif args.suite == "distraction":
@@ -209,7 +209,7 @@ def cmd_eval(args) -> int:
 
 
 def cmd_monitor(args) -> int:
-    """HTML-отчёт мониторинга: состояние Δ, гистограмма норм, метрики, safety-gate."""
+    """HTML monitoring report: state Δ, histogram of norms, metrics, safety-gate."""
     patch = atomicng.MemoryPatch.load_pretrained(args.overlay)
     metrics = atomicng.monitor_html.load_metrics_jsonl(args.metrics) if args.metrics else None
     verify_msg, verify_ok = None, None
@@ -218,8 +218,8 @@ def cmd_monitor(args) -> int:
     try:
         verdict = atomicng.verify_deletion(model, n_probes=32)
         verify_msg, verify_ok = verdict.message, verdict.passed
-    except RuntimeError as exc:  # патч слишком плотный для нейтральных проб
-        verify_msg, verify_ok = f"verify недоступен: {exc}", None
+    except RuntimeError as exc:  # The patch is too dense to find neutral probes.
+        verify_msg, verify_ok = f"Verification unavailable: {exc}", None
     out = args.out or f"{args.overlay}.monitor.html"
     atomicng.monitor_html.write_report(
         out, patch=patch, metrics_records=metrics,
@@ -230,7 +230,7 @@ def cmd_monitor(args) -> int:
 
 
 def cmd_export_ple(args) -> int:
-    """Экспорт полной таблицы T⁰+Δ в PLE-бинарник для llama.cpp-движков."""
+    """Export the merged table T⁰+Δ in binary PLE format for llama.cpp."""
     patch = atomicng.MemoryPatch.load_pretrained(args.overlay)
     model = atomicng.TinyModel(spec=patch.spec, seed=args.seed)
     integrity = atomicng.export_ple(model.t0, patch, args.out, source=f"tiny:seed{args.seed}")
@@ -239,7 +239,7 @@ def cmd_export_ple(args) -> int:
 
 
 def cmd_export_vllm(args) -> int:
-    """Артефакты для vLLM: merged таблица T⁰+Δ + vllm_config.json (путь 1 из docs/vllm.md)."""
+    """Export the merged table T⁰+Δ and vllm_config.json. See docs/vllm.md."""
     patch = atomicng.MemoryPatch.load_pretrained(args.overlay)
     if args.base_table:
         base = np.load(args.base_table)
@@ -254,7 +254,7 @@ def cmd_export_vllm(args) -> int:
     return 0
 
 
-# ------------------------------------------------------------------- парсер
+# ------------------------------------------------------------------- parser
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -262,68 +262,68 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--version", action="store_true")
     sub = parser.add_subparsers(dest="command", required=False)
 
-    p = sub.add_parser("write", help="запись свидетельства в .atomicng (tiny-бэкенд)")
-    p.add_argument("--evidence", required=True, help="текстовый файл: строка = документ")
+    p = sub.add_parser("write", help="Write evidence to an .atomicng overlay using the tiny backend")
+    p.add_argument("--evidence", required=True, help="Text file with one document per line")
     p.add_argument("--overlay", required=True)
-    p.add_argument("--config", help="YAML-конфиг (spec/policies/writer)")
-    p.add_argument("--audit", help="путь audit-лога JSONL")
-    p.add_argument("--metrics-jsonl", help="путь экспорта метрик")
+    p.add_argument("--config", help="YAML configuration for the table, policies, and writer")
+    p.add_argument("--audit", help="JSONL audit log path")
+    p.add_argument("--metrics-jsonl", help="Metrics export path")
     p.set_defaults(func=cmd_write)
 
-    p = sub.add_parser("stats", help="статистика оверлея")
+    p = sub.add_parser("stats", help="Show overlay statistics")
     p.add_argument("overlay")
     p.set_defaults(func=cmd_stats)
 
-    p = sub.add_parser("verify", help="целостность оверлея (sha256-манифест + спека)")
+    p = sub.add_parser("verify", help="Check the overlay's SHA-256 manifest and table specification")
     p.add_argument("overlay")
     p.set_defaults(func=cmd_verify)
 
-    p = sub.add_parser("merge", help="слияние оверлеев (D1-политика)")
+    p = sub.add_parser("merge", help="Merge overlays using the D1 update rule")
     p.add_argument("--base", required=True)
     p.add_argument("--other", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--gate", type=float, default=0.5)
     p.set_defaults(func=cmd_merge)
 
-    p = sub.add_parser("bench", help="скорость записи / оверхед чтения / verify")
+    p = sub.add_parser("bench", help="Benchmark write throughput, read overhead, and verification")
     p.add_argument("--docs", type=int, default=200)
-    p.add_argument("--save", help="сохранить baseline JSON")
-    p.add_argument("--check", help="сравнить с baseline (регресс-гейт)")
+    p.add_argument("--save", help="Save the baseline as JSON")
+    p.add_argument("--check", help="Check for regressions against a baseline")
     p.add_argument("--tolerance", type=float, default=1.25)
     p.set_defaults(func=cmd_bench)
 
     p = sub.add_parser("publish", help="safety-gate: verify + drift + hot-rows")
     p.add_argument("overlay")
-    p.add_argument("--config", help="YAML с секцией publish")
+    p.add_argument("--config", help="YAML configuration with a publish section")
     p.set_defaults(func=cmd_publish)
 
-    p = sub.add_parser("eval", help="протоколы статьи: acquisition / distraction / chain")
-    p.add_argument("--evidence", required=True, help="текстовый файл: строка = документ")
+    p = sub.add_parser("eval", help="Run acquisition, distraction, and chain evaluations")
+    p.add_argument("--evidence", required=True, help="Text file with one document per line")
     p.add_argument("--suite", choices=["quick", "acquisition", "distraction", "chain"], default="quick")
-    p.add_argument("--json", help="сохранить отчёт JSON")
+    p.add_argument("--json", help="Save the report as JSON")
     p.set_defaults(func=cmd_eval)
 
-    p = sub.add_parser("monitor", help="self-contained HTML-отчёт: Δ, нормы, метрики, verify")
+    p = sub.add_parser("monitor", help="Build a standalone HTML report for the patch, norms, metrics, and verification")
     p.add_argument("overlay")
-    p.add_argument("--metrics", help="JSONL-файл MetricsRegistry")
-    p.add_argument("--out", help="путь отчёта (по умолчанию <overlay>.monitor.html)")
+    p.add_argument("--metrics", help="JSONL output from MetricsRegistry")
+    p.add_argument("--out", help="Report path (default: <overlay>.monitor.html)")
     p.set_defaults(func=cmd_monitor)
 
-    p = sub.add_parser("export-ple", help="PLE-таблица T⁰+Δ для llama.cpp-движков")
+    p = sub.add_parser("export-ple", help="Export the merged table in PLE format for llama.cpp")
     p.add_argument("--overlay", required=True)
     p.add_argument("--out", required=True)
-    p.add_argument("--seed", type=int, default=17, help="seed sidecar-T⁰ для tiny-источника")
+    p.add_argument("--seed", type=int, default=17, help="Seed for the tiny backend's base table")
     p.set_defaults(func=cmd_export_ple)
 
-    p = sub.add_parser("export-vllm", help="merged таблица + vllm_config.json для vLLM (docs/vllm.md)")
+    p = sub.add_parser("export-vllm", help="Export a merged table and vllm_config.json for vLLM")
     p.add_argument("--overlay", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--model-id", default="unspecified")
-    p.add_argument("--base-table", help="npz/npy с T⁰ (по умолчанию tiny-T⁰ по seed)")
+    p.add_argument("--base-table", help="Base table in NPZ or NPY format (defaults to the seeded tiny table)")
     p.add_argument("--seed", type=int, default=17)
     p.set_defaults(func=cmd_export_vllm)
 
-    p = sub.add_parser("smoke", help="end-to-end цикл на tiny-модели")
+    p = sub.add_parser("smoke", help="Run an end-to-end smoke check on the tiny model")
     p.set_defaults(func=cmd_smoke)
 
     args = parser.parse_args(argv)
@@ -337,10 +337,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         code = args.func(args)
     except atomicng.AtomicNGError as exc:
-        print(f"ОШИБКА atomicng: {exc}", file=sys.stderr)
+        print(f"AtomicNG ERROR: {exc}", file=sys.stderr)
         return 2
     if code == 0:
-        print(f"[{args.command}] готово за {time.perf_counter() - start:.2f}с")
+        print(f"[{args.command}] finished in {time.perf_counter() - start:.2f} s")
     return code
 
 

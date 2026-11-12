@@ -1,7 +1,7 @@
-"""HFWriterTrainer: BPTT-обучение writer'а на настоящей HF-модели (мини-прогон).
+"""HFWriterTrainer: BPTT-training writer on the real HF-model (mini-run)).
 
-Модель заморожена, градиенты доходят до writer'а через Δ-инжект, loss конечен,
-чекпоинт writer'а сохраняется/грузится. Без сети — skip (tiny-random уже кэширован).
+Model frozen, gradients reach writer through Δ-inject, loss is finite,
+The writer checkpoint can be saved and loaded. Skip if the model is unavailable offline.
 """
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def _load_model():
 
         return AutoModelForCausalLM.from_pretrained(MODEL_ID)
     except Exception as exc:  # noqa: BLE001
-        pytest.skip(f"HF-модель недоступна: {exc}")
+        pytest.skip(f"HF model not available: {exc}")
 
 
 def _make_trainer(model, writer_hidden=32):
@@ -58,8 +58,8 @@ def test_hf_trainer_steps_gradients_and_freeze():
         if p.grad is not None:
             assert torch.isfinite(p.grad).all()
     grads_present = any(p.grad is not None and p.grad.abs().sum() > 0 for p in writer.parameters())
-    assert grads_present, "градиенты не дошли до writer'а"
-    assert all(not p.requires_grad for p in model.parameters()), "модель должна быть заморожена"
+    assert grads_present, "The gradients didn’t get to the writer."
+    assert all(not p.requires_grad for p in model.parameters()), "The model should be frozen."
     trainer.close()
 
 
@@ -67,7 +67,7 @@ def test_hf_trainer_checkpoint_roundtrip(tmp_path):
     model = _load_model().eval()
     trainer, writer, _spec = _make_trainer(model)
     vocab = int(model.config.vocab_size)
-    # повторы внутри блока → общие строки между блоками → градиентный путь через Δ
+    # repeats within the block → common lines between blocks → gradient path through Δ
     ids = [i % (vocab - 1) + 1 for i in (5, 17, 3, 29, 11, 5, 17, 3, 29, 11)]
     trainer.train_group([[Block(ids, 4), Block(ids, 4)]])
     trainer.close()
@@ -91,5 +91,5 @@ def test_sidecar_handle_nll_changes_with_memory():
     handle.write(ids, writer)
     nll_self = handle.nll([ids])
     assert nll_empty == nll_empty and nll_self == nll_self
-    assert nll_self != nll_empty, "память не изменила NLL"
+    assert nll_self != nll_empty, "memory didn’t change the NLL"
     handle.detach()

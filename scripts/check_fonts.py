@@ -1,4 +1,4 @@
-"""Проверка шрифтов Windows для рендера."""
+"""Checking Windows fonts for rendering."""
 import os
 
 FONTS = r"C:\Windows\Fonts"

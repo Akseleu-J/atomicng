@@ -1,4 +1,4 @@
-"""v0.4.0a1: plain-режим кодирования (T⁰-only), HTML-монитор, PLE-экспорт."""
+"""v0.4.0a1: Plain encoding (T⁰ only), HTML monitoring, and PLE export."""
 from __future__ import annotations
 
 import sys
@@ -12,11 +12,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import atomicng
 from atomicng import TinyModel
 
-# ------------------------------------------------- plain-кодирование (статья)
+# ------------------------------------------------- plain-coding (article))
 
 
 def test_plain_mode_encodes_on_t0_only():
-    """plain-вариант статьи: кодирование не видит текущую Δ (нулевые Δ_j и c_j)."""
+    """plain version of the article: the coding does not see the current Δ (zero Δ)_j c_j)."""
     pytest.importorskip("torch")
     from atomicng.backends.hf import attach_sidecar, stub_causal_lm
     from atomicng.writers.mlp import WriterMLP
@@ -35,21 +35,21 @@ def test_plain_mode_encodes_on_t0_only():
         seen_counts.append(counts.detach().clone())
         return original_forward(hidden, row_ids, delta_rows, counts)
 
-    writer.forward = spy_forward  # instance-атрибут перекрывает nn.Module.forward
+    writer.forward = spy_forward  # The example attribute covers nn.Module.forward
 
     ids = [5, 17, 3, 29, 11, 41, 5, 17]
-    handle.write(ids, writer, memory_aware=True)   # первая запись: память пуста
+    handle.write(ids, writer, memory_aware=True)   # First entry: memory empty
     assert seen_deltas[0].abs().sum() == 0
-    handle.write(ids, writer, memory_aware=True)   # вторая: delta-режим ВИДИТ Δ
+    handle.write(ids, writer, memory_aware=True)   # Second: delta mode SEES Δ
     assert seen_deltas[1].abs().sum() > 0
-    handle.write(ids, writer, memory_aware=False)  # plain-режим: Δ и c_j нулевые в кодировании
+    handle.write(ids, writer, memory_aware=False)  # plain mode: Δ and c_j zero-coding
     assert seen_deltas[2].abs().sum() == 0
     assert seen_counts[2].abs().sum() == 0
-    assert len(handle.memory) > 0, "plain-кодирование не отменяет саму запись"
+    assert len(handle.memory) > 0, "plain-coding does not cancel the record itself."
     handle.detach()
 
 
-# ------------------------------------------------------------- HTML-монитор
+# ------------------------------------------------------------- HTML monitor
 
 
 def test_monitor_report_contains_sections(tmp_path):
@@ -59,13 +59,13 @@ def test_monitor_report_contains_sections(tmp_path):
     for i in range(3):
         atomicng.write(model, f"monitor test document {i} with facts", writer=writer, metrics=reg)
     html_text = atomicng.build_report(model.memory, metrics_records=reg.records)
-    for marker in ("AtomicNG Monitor", "Состояние памяти", "Гистограмма норм", "Метрики записи", "svg"):
-        assert marker in html_text, f"нет секции {marker!r}"
-    assert "<script" not in html_text, "отчёт обязан быть без внешних скриптов"
+    for marker in ("AtomicNG Monitor", "Memory state", "Row norm histogram", "Write metrics", "svg"):
+        assert marker in html_text, f"no section {marker!r}"
+    assert "<script" not in html_text, "The report must be without external scripts."
 
     out = tmp_path / "report.html"
     atomicng.write_report(str(out), patch=model.memory, metrics_records=reg.records,
-                          verify_message="откат побитовый", verify_passed=True)
+                          verify_message="kickback", verify_passed=True)
     assert out.exists() and out.stat().st_size > 2000
 
 
@@ -78,10 +78,10 @@ def test_monitor_metrics_jsonl_roundtrip(tmp_path):
     records = atomicng.load_metrics_jsonl(str(path))
     assert len(records) == 1 and "mean_gate" in records[0]
     html_text = atomicng.build_report(model.memory, metrics_records=records)
-    assert "записей" in html_text
+    assert "writes" in html_text
 
 
-# ------------------------------------------------------------- PLE-экспорт
+# ------------------------------------------------------------- PLE-export
 
 
 def test_ple_export_roundtrip_and_delta_effect(tmp_path):
@@ -95,7 +95,7 @@ def test_ple_export_roundtrip_and_delta_effect(tmp_path):
     spec, table, header = atomicng.load_ple(str(out))
     assert spec == model.spec and table.shape == (1024, 16)
     assert header["source"] == "test" and header["n_delta_rows"] == len(model.memory)
-    # строки с Δ отличаются от базы; строки без Δ совпадают побитово
+    # strings with Δ differ from the base; strings without Δ coincide bitwise
     delta_rows = set(model.memory.row_ids())
     assert any(not np.array_equal(table[r], model.t0[r]) for r in delta_rows)
     clean = [r for r in (0, 5, 100) if r not in delta_rows]
@@ -107,7 +107,7 @@ def test_ple_rejects_corruption_and_wrong_magic(tmp_path):
     out = tmp_path / "t.ple"
     atomicng.export_ple(model.t0, model.memory, str(out))
     data = bytearray(out.read_bytes())
-    data[-1] ^= 0xFF  # порча тела
+    data[-1] ^= 0xFF  # body-damage
     out.write_bytes(bytes(data))
     with pytest.raises(atomicng.OverlayError):
         atomicng.load_ple(str(out))

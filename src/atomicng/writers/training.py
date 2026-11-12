@@ -1,13 +1,12 @@
-"""Обучение writer'а на raw-text цели (Алгоритм 2 статьи, мини-стенд).
+"""Train a writer on the small PyTorch backend.
 
-Протокол статьи: блоки 512 токенов с query-префиксом 128; память стартует пустой;
-блок предсказывается → затем записывается; loss нормируется на группу траекторий;
-backprop идёт сквозь всю цепочку записей D1 в θ writer'а (BPTT); градиент остановлен
-на Ĥ; модель заморожена; AdamW 3e-4, clip 1, без weight decay.
+The default protocol uses 512-token blocks with a 128-token query prefix.
+Predict each block before writing it, start each trajectory with empty
+memory, and normalize loss by trajectory group. Backpropagate through D1 to
+the writer while stopping gradients at Ĥ. The model stays frozen.
 
-TorchTinyModel — учебный стенд с той же математикой чтения, что у ядра (биграммный
-gather T⁰+Δ), но в torch и с per-position logits для CE. Ширина строки равна hidden_size,
-чтобы вектор памяти входил в residual stream сложением (упрощение стенда).
+The backend adds bigram memory rows to the residual stream and exposes
+per-position logits for continuation cross-entropy.
 """
 from __future__ import annotations
 
@@ -20,7 +19,7 @@ from ..specs import TableSpec
 
 
 class TorchTinyModel(nn.Module):
-    """Замороженный псевдо-LLM для тренировки writer'а на CPU."""
+    """Frozen pseudo-LLM for CPU writer training."""
 
     def __init__(self, vocab_size: int = 64, hidden_size: int = 32,
                  n_rows: int = 256, seed: int = 17) -> None:
@@ -34,7 +33,7 @@ class TorchTinyModel(nn.Module):
 
     @staticmethod
     def bigram_rows(input_ids: torch.Tensor, n_rows: int) -> torch.Tensor:
-        """(B, T) → (B, T-1) long: детерминированные адреса строк биграмм (blake2b — совместим с ядром)."""
+        """(B, T → (B, T-1) long: deterministic addresses of bigram strings (blake2b – compatible with the kernel))."""
         ids = input_ids.detach().cpu().tolist()
         out = torch.empty((len(ids), len(ids[0]) - 1), dtype=torch.long)
         for i, seq in enumerate(ids):
@@ -46,20 +45,20 @@ class TorchTinyModel(nn.Module):
     def forward(self, input_ids: torch.Tensor, delta_rows: torch.Tensor):
         """delta_rows: (B, T-1, d=hidden_size).
 
-        → (hidden (B, T, Hd) — несёт градиент через Δ, logits (B, T-1, V)).
+        → (hidden (B, T, Hd) – carries a gradient through Δ, logits (B, T-1, V))).
         """
         b, t = input_ids.shape
         rows = self.bigram_rows(input_ids, self.n_rows).to(input_ids.device)
-        read_seq = self.t0[rows] + delta_rows                       # память читается из T⁰+Δ
+        read_seq = self.t0[rows] + delta_rows                       # Read memory from T⁰+Δ.
         pad = torch.zeros(b, 1, self.hidden_size, device=input_ids.device, dtype=read_seq.dtype)
         mem_seq = torch.cat([pad, read_seq], dim=1)
-        h = self.embed[input_ids] + mem_seq                         # без in-place: граф чистый
-        logits = h[:, :-1, :] @ self.w_out                          # предсказание t+1 из t
+        h = self.embed[input_ids] + mem_seq                         # in-place free: graph clean
+        logits = h[:, :-1, :] @ self.w_out                          # prediction of t+1 from t
         return h, logits
 
 
 class WriterTrainer:
-    """Тренер writer'а: BPTT сквозь цепочку записей D1 (δ-память — словарь тензоров)."""
+    """Writer coach: BPTT through D1 (δ-memory - tensor dictionary))."""
 
     def __init__(self, model: TorchTinyModel, writer: nn.Module, spec: TableSpec,
                  lr: float = 3e-4, clip: float = 1.0, device: str = "cpu") -> None:
@@ -73,19 +72,19 @@ class WriterTrainer:
         self.opt = torch.optim.AdamW(self.writer.parameters(), lr=lr, weight_decay=0.0)
 
     def _delta_gather(self, delta: dict[int, torch.Tensor], rows: torch.Tensor) -> torch.Tensor:
-        """Сбор Δ_j по адресам (без in-place: стек сохраняет граф BPTT)."""
+        """Collection Δ_j address (no in-place: stack saves BPTT graph))."""
         width = self.spec.row_width
         zero = torch.zeros(width, device=self.device)
         flat = [delta.get(int(r), zero) for r in rows.reshape(-1).tolist()]
         return torch.stack(flat).reshape(*rows.shape, width)
 
     def train_group(self, trajectories: list[list[torch.Tensor]]) -> float:
-        """Один апдейт на группу траекторий (статья: 12 траекторий, loss нормируется раз).
+        """One update per group of trajectories (article: 12 trajectories, loss is normalized once)).
 
-        trajectories: список траекторий; траектория — список блоков (B=1, T) input_ids.
-        Память стартует пустой на каждую траекторию; блок предсказывается → пишется.
-        Loss группы — сумма по блокам; ОДИН backward сквозь всю цепочку D1 (у блока 1
-        градиентного пути к θ нет — память пишется после предсказания, как в статье).
+        Trajectories: list of trajectories; trajectory - list of blocks (B=1, T) input_ids.
+        Memory starts empty on each trajectory; block predicted.
+        Loss Group: sum by blocks; ONE is backward through the entire D1 chain (block 1)
+        There is no gradient path to θ - memory is written after prediction, as in the article).
         """
         self.opt.zero_grad(set_to_none=True)
         total = 0.0
@@ -109,7 +108,7 @@ class WriterTrainer:
                 ) / len(traj)
                 total = total + loss_k
 
-                # запись блока (дифференцируемая, Alg. 1): D1 block averaging
+                # block recording (differentiable, Alg. 1): D1 block averaging
                 flat_rows = rows.reshape(-1)
                 flat_targets = targets.reshape(-1, self.spec.row_width)
                 flat_gates = gates.reshape(-1)
@@ -120,10 +119,10 @@ class WriterTrainer:
                     w = flat_gates[mask].mean()
                     old = delta.get(r, torch.zeros(self.spec.row_width, device=self.device))
                     delta[r] = (1.0 - w) * old + a
-                    counts[r] = counts.get(r, 0) + int(mask.sum())
+                    counts[r] = counts.get(r, 0) + 1  # c_j counts BLOCKS (author review)
         if not total.requires_grad:
-            # Группа без градиентного пути (нет общих строк между блоками) —
-            # обновление бессмысленно, как и в hf_training: пропускаем шаг.
+            # Group without gradient path (no common lines between blocks)) —
+            # The update is pointless, as in hf._training: skip.
             return float(total.detach())
         total.backward()
         torch.nn.utils.clip_grad_norm_(self.writer.parameters(), self.clip)

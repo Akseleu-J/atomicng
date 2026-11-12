@@ -1,4 +1,4 @@
-"""vLLM-калибровка v3: uv-venv (без ensurepip) → vllm → serve smoke → verdict."""
+"""vLLM calibration v3: uv-venv (without ensurepip) → vllm → serve smoke → verdict."""
 import json
 import subprocess
 import sys
@@ -73,7 +73,7 @@ def main() -> None:
                 except json.JSONDecodeError:
                     continue
         if smoke_result is None:
-            raise RuntimeError(f"smoke json не найден в выводе: {out[-300:]}")
+            raise RuntimeError(f"Smoke json not found in the output: {out[-300:]}")
         save("S4_serve", {"status": "OK", **smoke_result})
         save("S5_verdict", {"status": "PASS"})
     except Exception:  # noqa: BLE001

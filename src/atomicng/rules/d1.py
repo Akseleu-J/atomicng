@@ -1,17 +1,18 @@
-"""Правило записи D1 (block averaging) из статьи, адаптация DeltaNet.
+"""D1 block averaging from the paper.
 
-На блок событий, адресующих строку j:
-    A_j = (1/n_j) · Σ_a β_a·v_a          (среднее β-взвешенных целей)
-    w_j = (1/n_j) · Σ_a β_a  ∈ [0, 1]    (средний гейт)
-    Δ_j⁺ = (1 − w_j)·Δ_j + A_j           (выпуклая комбинация)
-    c_j⁺ = c_j + n_j
+For the n_j events that address row j (one BLOCK = one apply call):
 
-Следствия (проверяются property-тестами):
-- ограниченность: ‖Δ_j⁺‖ ≤ max(‖Δ_j‖, max_a ‖v_a‖)  (Prop. 1 статьи);
-- порядок событий внутри блока не влияет на результат;
-- одинокой записи с гейтом β соответствует Δ⁺ = (1−β)·Δ + β·v.
+    A_j = (1/n_j) · Σ_a β_a·v_a
+    w_j = (1/n_j) · Σ_a β_a
+    Δ_j⁺ = (1 − w_j)·Δ_j + A_j
+    c_j⁺ = c_j + 1          # счётчик БЛОКОВ, записавших строку:
+                            # D1 усредняет события блока в одно обновление,
+                            # поэтому c_j растёт на 1 за блок (подтверждено
+                            # автором метода, issue #1 в reference repo)
 
-Бюджеты (WritePolicies) проверяются ДО любого изменения патча: нарушение — атомарный отказ.
+Updates are bounded and invariant to within-block event order. A single
+event reduces to Δ⁺ = (1−β)·Δ + β·v. Write policies are checked before
+applying any changes to the patch.
 """
 from __future__ import annotations
 
@@ -26,7 +27,7 @@ from ..memory import MemoryPatch
 
 @dataclass(frozen=True)
 class Event:
-    """Событие записи: (строка, цель v_a, гейт β_a ∈ [0,1])."""
+    """Event entry: (line, goal v)_a, gate β_a ∈ [0,1])."""
 
     row_id: int
     target: np.ndarray
@@ -46,7 +47,7 @@ class RowReport:
 
 @dataclass
 class WriteReport:
-    """Отчёт о записи (S2: ничего не пишется тихо)."""
+    """Recording report (S2: Nothing written quietly))."""
 
     n_events: int
     n_rows: int
@@ -62,8 +63,8 @@ class WriteReport:
         }
 
     def summary(self) -> str:
-        warn = f", предупреждений: {len(self.warnings)}" if self.warnings else ""
-        return f"записано {self.n_events} событий в {self.n_rows} строк{warn}"
+        warn = f", warning: {len(self.warnings)}" if self.warnings else ""
+        return f"Wrote {self.n_events} events to {self.n_rows} rows{warn}"
 
     @property
     def hot_rows(self) -> list[int]:
@@ -71,7 +72,7 @@ class WriteReport:
 
 
 class D1Rule:
-    """Правило записи D1. Лимиты передаются через WritePolicies (см. guards)."""
+    """D1 Recording Rule: Limits are transmitted through WritePolicies (see guards))."""
 
     def apply(
         self,
@@ -87,14 +88,14 @@ class D1Rule:
         groups: dict[int, list[Event]] = {}
         for e in events:
             if not 0.0 <= e.gate <= 1.0:
-                raise ValueError(f"гейт {e.gate} вне [0, 1] (строка {e.row_id})")
+                raise ValueError(f"gate {e.gate} outside [0, 1] for row {e.row_id}")
             if np.shape(e.target) != (width,):
-                raise ValueError(f"цель события должна иметь форму ({width},)")
+                raise ValueError(f"The event target must have shape ({width},).")
             groups.setdefault(int(e.row_id), []).append(e)
 
         policies.check_budgets(patch, set(groups), len(events))
 
-        # Фаза 1: вычислить новые значения и проверить капы — отказ ДО любого изменения.
+        # Phase 1: Calculate new values and check the caps – failure before any change.
         patch.bump_clock()
         report = WriteReport(n_events=len(events), n_rows=len(groups))
         updates: list[tuple[int, np.ndarray, RowReport, str | None]] = []
@@ -107,9 +108,9 @@ class D1Rule:
             before = patch.get(row_id)
             after = (1.0 - w) * before + a
             after_norm = float(np.linalg.norm(after))
-            hot, _ = policies.check_row_norm(after_norm)  # жёсткий кап поднимает ошибку здесь
+            hot, _ = policies.check_row_norm(after_norm)  # slug-drop picks up the error here
             warning = (
-                f"hot-row: строка {row_id} норма {after_norm:.4g} > капа {policies.hot_row_norm_cap}"
+                f"hot-row: line {row_id} norm {after_norm:.4g} > cap {policies.hot_row_norm_cap}"
                 if hot
                 else None
             )
@@ -130,10 +131,10 @@ class D1Rule:
                 )
             )
 
-        # Фаза 2: атомарная фиксация.
+        # Phase 2: Atomic fixation. c_j растёт на 1 за блок (по статье: счётчик блоков).
         for row_id, after, row_report, warning in updates:
             patch._write_row(row_id, after)
-            patch._add_count(row_id, len(groups[row_id]))
+            patch._add_count(row_id, 1)
             if warning:
                 report.warnings.append(warning)
             report.rows.append(row_report)

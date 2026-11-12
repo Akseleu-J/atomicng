@@ -1,7 +1,6 @@
-"""Мониторинг (слой observability): реестр метрик записи + экспортёры.
+"""Collect write metrics and export them to JSONL, TensorBoard, or W&B.
 
-JSONL-экспортёр встроен (без зависимостей); TensorBoard и W&B подключаются лениво —
-отсутствие пакета даёт понятную BackendError, а не падение пайплайна.
+TensorBoard and W&B are loaded on demand. Missing optional packages raise BackendError.
 """
 from __future__ import annotations
 
@@ -19,7 +18,7 @@ class Exporter(Protocol):
 
 
 class MetricsRegistry:
-    """Собирает по-записные и агрегированные метрики; every write → одна запись."""
+    """Collects record-by-record and aggregate metrics; every write → one entry."""
 
     def __init__(self) -> None:
         self.records: list[dict] = []
@@ -28,7 +27,7 @@ class MetricsRegistry:
     def add_exporter(self, exporter: Exporter) -> None:
         self._exporters.append(exporter)
 
-    # --------------------------------------------------------------- запись
+    # --------------------------------------------------------------- record
 
     def record_write(self, report: WriteReport, patch_stats: dict, duration_ms: float) -> dict:
         gates = [r.w for r in report.rows]
@@ -52,7 +51,7 @@ class MetricsRegistry:
             exporter(record)
         return record
 
-    # ------------------------------------------------------------- экспорт
+    # ------------------------------------------------------------- export
 
     def export_jsonl(self, path: str) -> int:
         p = Path(path)
@@ -75,7 +74,7 @@ class MetricsRegistry:
 
 
 class JsonlExporter:
-    """Append-only экспортёр в JSONL (совместим с audit-логом по формату строки)."""
+    """Append-only exporter in JSONL (compatible with audit log in line format))."""
 
     def __init__(self, path: str) -> None:
         self.path = Path(path)
@@ -87,14 +86,14 @@ class JsonlExporter:
 
 
 class TensorBoardExporter:
-    """Ленивый экспортёр в TensorBoard (требует torch+tensorboard, падение — понятная ошибка)."""
+    """Lazy exporter in TensorBoard (requires torch+tensorboard, fall is an understandable mistake))."""
 
     def __init__(self, logdir: str) -> None:
         try:
             from torch.utils.tensorboard import SummaryWriter  # noqa: PLC0415
         except ImportError as exc:
             raise BackendError(
-                "TensorBoardExporter требует torch и tensorboard: pip install 'atomicng[torch]' tensorboard"
+                "TensorBoardExporter requires torch and tensorboard: pip install 'atomicng[torch]' tensorboard"
             ) from exc
         self._writer = SummaryWriter(logdir)
         self._step = 0
@@ -108,13 +107,13 @@ class TensorBoardExporter:
 
 
 class WandbExporter:
-    """Ленивый экспортёр в W&B (как у LLaMA-Factory: один интерфейс, много бэкендов)."""
+    """Lazy exporter in W&B (LLaMA-Factory: one interface, many backends))."""
 
     def __init__(self, project: str, config: dict | None = None) -> None:
         try:
             import wandb  # noqa: PLC0415
         except ImportError as exc:
-            raise BackendError("WandbExporter требует wandb: pip install wandb") from exc
+            raise BackendError("WandbExporter requires wandb: pip install wandb") from exc
         self._run = wandb.init(project=project, config=config or {}, reinit=True)
 
     def __call__(self, record: dict) -> None:

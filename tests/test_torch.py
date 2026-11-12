@@ -1,6 +1,6 @@
-"""Torch-слой: writer'ы (формы/гейты), BPTT-тренер (loss падает), HF sidecar-attach.
+"""Torch layer: writer (shapes and gates), BPTT trainer (loss falls), HF sidecar-attach.
 
-Без torch эти тесты пропускаются (pytest.importorskip) — ядро от torch не зависит.
+Without torch, these tests are skipped (pytest.importorskip) – the core of the torch is independent.
 """
 from __future__ import annotations
 
@@ -30,25 +30,25 @@ def test_writer_mlp_shapes_and_gate_range():
     assert targets.shape == (2, 11, 32) and gates.shape == (2, 11)
     assert torch.equal(out_rows, rows)
     assert (gates >= 0).all() and (gates <= 1).all()
-    assert w.bound_targets is False  # линейные цели — поведение статьи по умолчанию
+    assert w.bound_targets is False  # Linear goals – the default behavior of the article
 
 
 def test_tanh_bounded_targets_opt_in():
-    """tanh-ограничение целей — opt-in стабилизация для sidecar-адаптера (FIDELITY.md)."""
+    """tanh target limitation – opt-in stabilization for sidecar adapter (FIDELITY.md))."""
     from atomicng.writers.mlp import WriterMLP
 
     wb = WriterMLP(hidden_size=32, row_width=32, hidden=64, target_scale=0.2, bound_targets=True)
     targets, gates, _ = wb(
-        torch.randn(2, 12, 32) * 50,  # большие входы: линейный режим улетел бы
+        torch.randn(2, 12, 32) * 50,  # Big entrances: linear mode would fly away
         torch.randint(0, 256, (2, 11)),
         torch.zeros(2, 11, 32),
         torch.zeros(2, 11),
     )
-    assert targets.abs().max() <= wb.target_scale + 1e-6  # tanh-ограничение целей
+    assert targets.abs().max() <= wb.target_scale + 1e-6  # tanh-limitation of objectives
 
 
 def test_trainer_loss_decreases():
-    """Синтетика: «факт» повторяется в каждом блоке → запись в память должна снижать CE."""
+    """Synthetics: “fact” repeats in each block → memory recording should reduce CE."""
     from atomicng.writers.mlp import WriterMLP
     from atomicng.writers.training import TorchTinyModel, WriterTrainer
 
@@ -58,18 +58,18 @@ def test_trainer_loss_decreases():
 
     fact = [5, 9, 13, 21, 33, 41]
     noise = [2, 7, 11, 19, 23, 29, 31, 37, 43, 47]
-    block_ids = fact + fact + noise  # 22 токена: биграммы факта занимают много позиций
+    block_ids = fact + fact + noise  # 22 tokens: bigrams of fact occupy many positions
     trajectory = [torch.tensor(block_ids).unsqueeze(0) for _ in range(4)]
 
     losses = [trainer.train_group([trajectory]) for _ in range(80)]
     first, last = sum(losses[:5]) / 5, sum(losses[-5:]) / 5
-    assert last < first, f"loss не снизился: {first:.4f} → {last:.4f}"
+    assert last < first, f"loss hasn’t gone down.: {first:.4f} → {last:.4f}"
 
 
 def test_trainer_d1_chain_is_bptt():
-    """Градиенты доходят до writer'а сквозь цепочку D1 (несколько блоков).
+    """Gradients reach the writer through the D1 chain (several blocks).).
 
-    Блоки детерминированы и содержат повторы — гарантия общих строк → градиентный путь.
+    Blocks are deterministic and contain repetitions – guarantee of common lines → gradient path.
     """
     from atomicng.writers.mlp import WriterMLP
     from atomicng.writers.training import TorchTinyModel, WriterTrainer
@@ -98,14 +98,14 @@ def test_hf_stub_attach_write_and_bit_exact_clear():
         with handle.write_session(ids), torch.no_grad():
             return model(input_ids=ids_t).logits
 
-    base = logits_with_memory()  # пустой патч: T⁰-чтение, Δ=0
+    base = logits_with_memory()  # Empty patch: read from T⁰ with Δ=0.
     writer = WriterMLP(hidden_size=32, row_width=32, hidden=64, target_scale=0.3)
     report = handle.write(ids, writer)
     assert report["n_events"] == len(ids) - 1
 
     written = logits_with_memory()
-    assert not torch.equal(base, written), "запись не повлияла на выход"
+    assert not torch.equal(base, written), "The recording didn’t affect the exit."
 
     handle.memory.clear()
-    assert torch.equal(base, logits_with_memory()), "очистка Δ не вернула прикреплённую базу"
+    assert torch.equal(base, logits_with_memory()), "Δ cleaning did not return the attached base"
     handle.detach()

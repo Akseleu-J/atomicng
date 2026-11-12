@@ -1,4 +1,4 @@
-"""Рендер публикационных кадров AtomicNG → announce/assets/*.png (PIL, без браузера)."""
+"""Render the AtomicNG publication images with Pillow."""
 from __future__ import annotations
 
 import os
@@ -58,7 +58,7 @@ watermark(img, "Δ", F("segoeuib.ttf", 480), (830, 90))
 d.text((70, 56), "AtomicNG", font=seg(44, bold=True), fill=FG)
 chip(d, 70, 130, "1.0.0 · pip install atomicng", mono(22), fg=(255, 255, 255), bg=ACCENT)
 
-# формула T = T⁰ + Δ (надстрочный 0 вручную)
+# formula T = T⁰ + Δ (hand-over 0))
 fx, fy = 70, 250
 f_big = mono(96, bold=True)
 f_sup = mono(52, bold=True)
@@ -96,8 +96,8 @@ rows = [
     ("Colab TPU-VM CPU", "—", "54 ms / group", "2 training runs, min loss 1.60"),
     ("TPU chip (JAX)", "+", "8.4 ms / iter", "D1 math on chip"),
 ]
-# заголовок
-for x, label in zip(cols, ["Environment", "pytest", "BPTT stand", "Training"]):
+# headline
+for x, label in zip(cols, ["Environment", "pytest", "BPTT stand", "Training"], strict=False):
     d.text((x + 8, head_y), label, font=seg(22, bold=True), fill=ACCENT2)
 for i, row in enumerate(rows):
     y = head_y + 46 + i * row_h

@@ -1,4 +1,4 @@
-"""conftest: снятие пиков памяти между тестами (TinyModel ≈ 10.5 МБ на инстанс)."""
+"""conftest: Removing memory peaks between tests (TinyModel ≈ 10.5 MB per instance))."""
 from __future__ import annotations
 
 import gc

@@ -1,4 +1,4 @@
-"""Артефакты writer'а: safetensors round-trip, строгая валидация, fingerprint."""
+"""Writer’s artifacts: safetensors round-trip, strict validation, fingerprint."""
 from __future__ import annotations
 
 import sys

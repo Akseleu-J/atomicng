@@ -1,7 +1,7 @@
-"""Engine-адаптеры (слой чтения таблицы моделью).
+"""Backend adapters for n-gram table reads.
 
-v0.1: tiny — детерминированная CPU-модель для CI.
-v0.2: torch/HF attach. v0.4: vLLM-ридер, llama.cpp PLE-экспорт.
+TinyModel is a deterministic CPU backend for tests. The optional PyTorch
+adapter attaches a sidecar to a Hugging Face causal language model.
 """
 
 from .tiny import TinyModel

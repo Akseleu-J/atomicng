@@ -1,8 +1,7 @@
-"""Тестовые фикстуры. HashWriter — НЕ writer из статьи (тот появится в v0.2 как MLP).
+"""Deterministic hash writer for smoke tests.
 
-HashWriter детерминированно превращает текст в события записи: биграммы текста
-адресуют строки таблицы, цели — нормированные эмбеддинги токенов с фиксированным гейтом.
-Достаточно для end-to-end smoke: write → read изменился → clear → verify побитовый.
+Text bigrams address rows, and normalized token embeddings provide targets
+with a fixed gate. This exercises the write, read, clear, and verification path.
 """
 from __future__ import annotations
 
@@ -23,7 +22,7 @@ class HashWriter:
         self._targets = np.random.default_rng(17).standard_normal((vocab_size, self.spec.row_width))
 
     def tokenize(self, text: str) -> list[int]:
-        """Детерминированная токенизация без зависимостей: байты UTF-8 → id."""
+        """Deterministic tokenization without dependencies: UTF-8 bytes → id."""
         return [b % self.vocab_size for b in text.encode("utf-8")]
 
     def events(self, texts: list[str]) -> list[Event]:

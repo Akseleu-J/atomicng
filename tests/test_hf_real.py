@@ -1,7 +1,7 @@
-"""Валидация sidecar-attach на НАСТОЯЩЕЙ HF-модели (tiny-random LlamaForCausalLM).
+"""Validation of sidecar-attach on a real HF model (tiny-random LlamaForCausalLM)).
 
-Требует сети для скачивания ~2 МБ весов; без сети тест пропускается.
-Это первая проверка backends.hf за пределами стаба: настоящая структура
+Requires network to download ~2MB of scales; without network, test skipped.
+This is the first check of backends.hf outside the tab: the real structure
 model.model.layers / model.model.norm / config.hidden_size.
 """
 from __future__ import annotations
@@ -23,8 +23,8 @@ def _load_model():
         from transformers import AutoModelForCausalLM
 
         return AutoModelForCausalLM.from_pretrained(MODEL_ID)
-    except Exception as exc:  # noqa: BLE001 — сеть/кэш могут отсутствовать
-        pytest.skip(f"HF-модель {MODEL_ID} недоступна: {exc}")
+    except Exception as exc:  # noqa: BLE001 — Network or model cache may be unavailable.
+        pytest.skip(f"HF model {MODEL_ID} idle: {exc}")
 
 
 def test_real_llama_sidecar_write_and_bit_exact_clear(tmp_path):
@@ -46,14 +46,14 @@ def test_real_llama_sidecar_write_and_bit_exact_clear(tmp_path):
         with handle.write_session(ids), torch.no_grad():
             return model(input_ids=ids_t).logits
 
-    base = logits_now()  # пустой Δ: чтение T⁰ уже инжектится (sidecar-семантика)
+    base = logits_now()  # The sidecar still injects reads from T⁰ when Δ is empty.
 
     writer = WriterMLP(hidden_size=hidden_size, row_width=hidden_size, hidden=64, target_scale=0.3)
     report = handle.write(ids, writer)
     assert report["n_events"] == len(ids) - 1
 
     written = logits_now()
-    assert not torch.equal(base, written), "запись не повлияла на выход настоящей модели"
+    assert not torch.equal(base, written), "The recording did not affect the release of this model."
 
     overlay = tmp_path / "real.atomicng.npz"
     handle.save_overlay(str(overlay))
@@ -61,5 +61,5 @@ def test_real_llama_sidecar_write_and_bit_exact_clear(tmp_path):
     assert reloaded.checksum() == handle.memory.checksum()
 
     handle.memory.clear()
-    assert torch.equal(base, logits_now()), "очистка Δ не вернула прикреплённую базу (побитово)"
+    assert torch.equal(base, logits_now()), "cleaning Δ did not return the attached base (bitbitbit))"
     handle.detach()

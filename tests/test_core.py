@@ -1,4 +1,4 @@
-"""Property-тесты ядра atomicng v0.1 (запуск: pytest или python tests/run_all.py)."""
+"""Property tests of atomicng v0.1 (launch: pytest or python) tests/run_all.py)."""
 from __future__ import annotations
 
 import sys
@@ -23,11 +23,11 @@ def _rng_events(rng, n_rows: int, width: int, n: int, gate_range=(0.0, 1.0)) -> 
     ]
 
 
-# ---------------------------------------------------------------- свойства D1
+# ---------------------------------------------------------------- D1
 
 
 def test_single_event_is_convex_combination():
-    """Одинокая запись с гейтом β: Δ⁺ = (1−β)·Δ + β·v (следствие D1)."""
+    """Single entry with gate β: Δ+ = (1−β)·Δ + β·v (effect D1))."""
     patch = MemoryPatch(SIDECAR_SMALL)
     v = np.full(SIDECAR_SMALL.row_width, 0.2, dtype=np.float32)
     patch.bump_clock()
@@ -38,7 +38,7 @@ def test_single_event_is_convex_combination():
 
 
 def test_block_averaging_matches_paper_form():
-    """Δ⁺ = (1−w)·Δ + mean(β_a·v_a), w = mean(β_a) — блочно, не последовательно."""
+    """Δ⁺ = (1−w)·Δ + mean(β_a·v_a), w = mean(β_a) — blockily, not consistently."""
     patch = MemoryPatch(SIDECAR_SMALL)
     rng = np.random.default_rng(3)
     v1, v2 = (0.1 * rng.standard_normal(SIDECAR_SMALL.row_width).astype(np.float32) for _ in range(2))
@@ -53,7 +53,7 @@ def test_block_averaging_matches_paper_form():
 
 
 def test_bounded_norm_property():
-    """Prop. 1: ‖Δ_j⁺‖ ≤ max(‖Δ_j‖, max_a ‖v_a‖) на длинной случайной цепочке блоков."""
+    """Prop. 1: ‖Δ_j⁺‖ ≤ max(‖Δ_j‖, max_a ‖v_a‖) long-chain."""
     rng = np.random.default_rng(17)
     patch = MemoryPatch(SIDECAR_SMALL)
     row = 42
@@ -70,7 +70,7 @@ def test_bounded_norm_property():
 
 
 def test_block_order_invariance():
-    """Порядок событий внутри блока не влияет на результат (среднее коммутативно)."""
+    """The order of events within the block does not affect the result (average commutatively).)."""
     rng = np.random.default_rng(5)
     events = _rng_events(rng, SIDECAR_SMALL.n_rows, SIDECAR_SMALL.row_width, 30)
     p1, p2 = MemoryPatch(SIDECAR_SMALL), MemoryPatch(SIDECAR_SMALL)
@@ -86,7 +86,7 @@ def test_gate_validation():
         D1Rule().apply(patch, [bad])
     except ValueError:
         return
-    raise AssertionError("гейт 1.5 должен отвергаться")
+    raise AssertionError("Gate 1.5 must be rejected.")
 
 
 def test_hot_row_guard_warns():
@@ -96,7 +96,7 @@ def test_hot_row_guard_warns():
     assert report.rows[0].hot and report.warnings
 
 
-# ---------------------------------------------------------- неразрушаемость
+# ---------------------------------------------------------- indestructibility
 
 
 def _model_with_memory() -> TinyModel:
@@ -105,8 +105,8 @@ def _model_with_memory() -> TinyModel:
 
 
 def test_write_locality_query_effect_and_bit_exact_deletion():
-    """Локальность: нейтральные пробы не меняются от записи (побитово).
-    Эффект: запрос, содержащий записанные биграммы, меняет выход. verify проходит."""
+    """Locality: neutral samples do not change from recording (bitbited)).
+    Effect: A request containing recorded bigrams changes the output.."""
     model = _model_with_memory()
     writer = atomicng.HashWriter(model.spec)
     evidence = "A fact about volcanic soil chemistry."
@@ -116,17 +116,17 @@ def test_write_locality_query_effect_and_bit_exact_deletion():
 
     atomicng.write(model, evidence, writer=writer)
 
-    assert np.array_equal(neutral, model.probe(n=16)), "запись повлияла на нейтральные пробы (нет локальности)"
+    assert np.array_equal(neutral, model.probe(n=16)), "The recording affected neutral samples (no locality))"
     q_after_write = model.logits(query)
-    assert not np.array_equal(q_base, q_after_write), "запись не повлияла на запрос с записанными биграммами"
+    assert not np.array_equal(q_base, q_after_write), "The recording did not affect the request for recorded bigrams"
 
     report = atomicng.verify_deletion(model, n_probes=16)
     assert report.passed and report.max_abs_diff == 0.0
-    assert np.array_equal(model.logits(query), q_after_write), "restore после verify исказил эффект памяти"
+    assert np.array_equal(model.logits(query), q_after_write), "Restore after verifying the memory effect"
 
 
 def test_revert_is_exact():
-    """Pre-image journal: revert возвращает состояние байт-в-байт (к состоянию после write 1)."""
+    """Pre-image journal: revert returns the byte-byte state (to the state after write 1))."""
     model = _model_with_memory()
     undo = atomicng.UndoJournal()
     atomicng.write(model, ["doc one", "doc two"], undo=undo)
@@ -139,7 +139,7 @@ def test_revert_is_exact():
 
 
 def test_overlay_roundtrip():
-    """Сохранение/загрузка .atomicng без потерь (строгая валидация версии формата)."""
+    """Save and load .atomicng overlays losslessly with strict version validation."""
     import tempfile
 
     model = _model_with_memory()
@@ -152,7 +152,7 @@ def test_overlay_roundtrip():
         assert reloaded.checksum() == model.memory.checksum()
     model.memory.clear()
     assert np.array_equal(model.probe(), TinyModel().probe())
-    model.memory.restore = None  # sanity: дальше работаем с загруженным
+    model.memory.restore = None  # Sanity: We are still working with the download
     patch = reloaded
     fresh = _model_with_memory()
     fresh.memory = patch
@@ -171,7 +171,7 @@ def test_rejects_unknown_overlay_version():
             MemoryPatch.load_pretrained(str(path))
         except atomicng.OverlayError:
             return
-    raise AssertionError("неизвестная версия оверлея должна отвергаться")
+    raise AssertionError("Unknown version of the overlay must be rejected")
 
 
 def test_audit_log_records_writes(tmp_path=None):
@@ -188,7 +188,7 @@ def test_audit_log_records_writes(tmp_path=None):
 
 
 def test_lazy_decay():
-    """Ленивый decay: значение строки затухает с тактами, materialize фиксирует."""
+    """Lazy decay: the value of the line fades with the clock, materialize fixes."""
     patch = MemoryPatch(SIDECAR_SMALL, decay=0.5)
     patch.bump_clock()
     v = np.ones(SIDECAR_SMALL.row_width, dtype=np.float32)

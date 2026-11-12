@@ -1,7 +1,6 @@
-"""Артефакты writer'а: safetensors (data-only, без pickle — S1), конфиг в метаданных.
+"""Save and load data-only writer checkpoints in safetensors format.
 
-Формат: safetensors-файл с state_dict writer'а; метаданные (архитектура, гиперпараметры,
-версия формата) — в metadata-блоке safetensors.
+Metadata records the writer architecture, hyperparameters, and format version.
 """
 from __future__ import annotations
 
@@ -19,12 +18,12 @@ def _require():
         from safetensors import safe_open  # noqa: PLC0415
         from safetensors.torch import save_file  # noqa: PLC0415
     except ImportError as exc:
-        raise BackendError("writers.io требует torch и safetensors: pip install 'atomicng[torch]'") from exc
+        raise BackendError("writers.io requires torch and safetensors: pip install 'atomicng[torch]'") from exc
     return safe_open, save_file
 
 
 def writer_config(writer) -> dict:
-    """Конфиг архитектуры WriterMLP для метаданных артефакта."""
+    """WriterMLP architecture configuration for artifact metadata."""
     head_embed_dim = int(writer.head_embed.embedding_dim)
     feature_dim = int(writer.v_head[0].in_features)
     return {
@@ -40,7 +39,7 @@ def writer_config(writer) -> dict:
 
 
 def save_writer(writer, path: str, extra: dict | None = None) -> None:
-    """Сохраняет writer (state_dict + конфиг в метаданных)."""
+    """Save the writer (state)_dict + metadata-configuration)."""
     _safe_open, save_file = _require()
     config = writer_config(writer)
     config.update(extra or {})
@@ -50,9 +49,9 @@ def save_writer(writer, path: str, extra: dict | None = None) -> None:
 
 
 def load_writer(path: str, writer=None):
-    """Загружает writer; без переданного модуля — строит по конфигу из метаданных.
+    """Downloads the writer; without the transferred module - builds on a config from metadata.
 
-    Возвращает (writer, config). Неизвестная версия формата — отказ.
+    Writer, config. Unknown version of the format - rejection.
     """
     safe_open, _save_file = _require()
     with safe_open(path, framework="pt") as f:
@@ -61,15 +60,15 @@ def load_writer(path: str, writer=None):
     try:
         config = {k: json.loads(v) for k, v in raw_metadata.items()}
     except (TypeError, json.JSONDecodeError) as exc:
-        raise OverlayError(f"writer {path!r}: нечитаемые метаданные ({exc})") from exc
+        raise OverlayError(f"writer {path!r}: unreadable metadata ({exc})") from exc
     if config.get("writer_format") != WRITER_FORMAT or int(config.get("writer_version", -1)) != WRITER_VERSION:
         raise OverlayError(
-            f"writer {path!r}: формат {config.get('writer_format')!r} "
-            f"v{config.get('writer_version')} не поддерживается"
+            f"writer {path!r}: format {config.get('writer_format')!r} "
+            f"v{config.get('writer_version')} unsupported"
         )
     if writer is None:
         if config.get("arch") != "WriterMLP":
-            raise OverlayError(f"writer {path!r}: неизвестная архитектура {config.get('arch')!r}")
+            raise OverlayError(f"writer {path!r}: unsupported architecture {config.get('arch')!r}")
         from .mlp import WriterMLP  # noqa: PLC0415
 
         writer = WriterMLP(
@@ -87,10 +86,36 @@ def load_writer(path: str, writer=None):
 
 
 def writer_fingerprint(writer) -> str:
-    """sha256 state_dict (для provenance: каким writer'ом писали)."""
+    """sha256 state_dict (For the proof: what kind of writer was written)."""
     h = hashlib.sha256()
     state = writer.state_dict()
     for k in sorted(state):
         h.update(k.encode())
         h.update(state[k].detach().cpu().numpy().tobytes())
     return h.hexdigest()
+
+
+def save_sidecar_proj(table, path: str, *, spec_json: str | None = None, seed: int | None = None) -> None:
+    """Сохраняет проекцию sidecar-таблицы рядом с чекпоинтом writer'а (author review, issue #1).
+
+    Writer воспроизводим только вместе с проекцией чтения (proj) и T⁰-seed: сохраняем веса
+    proj + seed, чтобы сторонний человек собрал идентичный инференс-пайплайн.
+    Требует safetensors.
+    """
+    _safe_open, save_file = _require()
+    meta = {
+        "artifact": json.dumps("atomicng-sidecar-proj"),
+        "t0_seed": json.dumps(seed if seed is not None else getattr(table, "seed", 0)),
+        "row_width": json.dumps(int(table.spec.row_width)),
+    }
+    state = {"proj.weight": table.proj.weight.detach().contiguous().cpu()}
+    save_file(state, path, metadata=meta)
+
+
+def load_sidecar_proj(table, path: str) -> None:
+    """Загружает веса проекции из save_sidecar_proj в переданную таблицу (на месте)."""
+    torch, safe_open, _save_file = _require()
+    with safe_open(path, framework="pt") as f:
+        state = {k: f.get_tensor(k) for k in f.keys()}
+    table.proj.load_state_dict(state)
+    table.proj.eval()

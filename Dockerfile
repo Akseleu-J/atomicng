@@ -6,10 +6,10 @@ COPY pyproject.toml README.md LICENSE CHANGELOG.md ./
 COPY src ./src
 COPY configs ./configs
 
-# Ядро без torch; для writer'ов/HF: pip install ".[torch]"
+# kernel without torch; for writers and Hugging Face: pip install ".[torch]"
 RUN pip install --no-cache-dir .
 
-# Сборка считается успешной только при зелёном smoke (безопасность-first)
+# The assembly is considered successful only with green smoke (safety-first).)
 RUN atomicng smoke > /dev/null
 
 ENTRYPOINT ["atomicng"]

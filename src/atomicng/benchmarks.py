@@ -1,18 +1,12 @@
-"""Реестр протоколов оценки статьи (T5): acquisition, distraction, chain.
+"""Acquisition, distraction, and chain evaluations from the paper.
 
-Все протоколы бэкенд-агностичны: модели нужен метод `nll(seqs) → nats/token`
-(реализован у TinyModel; для HF-моделей — адаптер с логитами), writer'у — `events(texts)`.
-Каждый протокол снапшотит патч в начале и восстанавливает его в конце — состояние
-модели не меняется (P0).
+The model exposes nll(seqs) in nats per token and the writer exposes
+events(texts). Each evaluation snapshots and restores the patch.
 
-Интерпретация (как в статье):
-- `delta_empty` > 0 — память с записью документа снижает NLL его продолжений относительно
-  пустой памяти (приобретение);
-- `delta_donor` > `delta_empty` — память документа специфична (чужая память помогает хуже);
-- `retention@k` — доля приобретения, сохранившаяся после k отвлекающих записей
-  (в статье plain 54%, delta 70% при k=16);
-- `drift` — сдвиг NLL на нейтральных пробах по мере цепочки записей (big-K drift);
-- `recall` — сохранение приобретения ранее записанных документов (small-k).
+Positive delta_empty means writing the document lowers its continuation NLL
+relative to empty memory. A larger delta_donor indicates document specificity.
+Retention@k measures how much acquisition remains after k distracting writes.
+Chain evaluations measure neutral-probe drift and recall of earlier documents.
 """
 from __future__ import annotations
 
@@ -45,11 +39,11 @@ def acquisition(
     writer=None,
     tokenizer=None,
 ) -> dict:
-    """Δ_empty / Δ_donor: пользу памяти документа против пустой и чужой памяти."""
+    """Δ_empty / Δ_donor: Use of document memory against empty and other people’s memory."""
     writer = writer or HashWriter(model.spec)
     seqs = [s for s in _seqs(model, docs, tokenizer) if len(s) >= 2]
     if len(docs) < 2:
-        raise ValueError("acquisition требует ≥ 2 документов (нужен донор)")
+        raise ValueError("Acquisition requires at least two documents, including a donor.")
 
     snap = model.memory.snapshot()
     try:
@@ -60,12 +54,12 @@ def acquisition(
         nll_self = model.nll(seqs)
 
         model.memory.clear()
-        _write_all(model, docs[1:], writer)  # донор: всё, кроме целевого документа
+        _write_all(model, docs[1:], writer)  # donor: everything except the target document
         nll_donor = model.nll(seqs)
     finally:
         model.memory.restore(snap)
 
-    # значения БЕЗ округления: тесты сверяют арифметику дельт бит-в-бит на любой платформе
+    # Values WITHOUT Rounding: Tests compare delta bit-to-bit arithmetic on any platform
     return {
         "n_docs": len(docs),
         "nll_empty": nll_empty,
@@ -84,13 +78,13 @@ def distraction(
     writer=None,
     tokenizer=None,
 ) -> dict:
-    """Retention@k: доля приобретения после k отвлекающих записей поверх целевого документа."""
+    """Retention@k: Acquisition share after k distracting entries on top of target document."""
     writer = writer or HashWriter(model.spec)
     if len(docs) < 2:
-        raise ValueError("distraction требует целевой документ и отвлекающие")
+        raise ValueError("Distraction requires a target document and distractor documents.")
     target = [_seqs(model, docs[:1], tokenizer)[0]]
     if len(target[0]) < 2:
-        raise ValueError("целевой документ короче 2 токенов")
+        raise ValueError("The target document must contain at least two tokens.")
     distractors = list(docs[1:])
 
     snap = model.memory.snapshot()
@@ -134,15 +128,15 @@ def chain(
     tokenizer=None,
     n_probes: int = 32,
 ) -> dict:
-    """Цепочка записей: дрейф на нейтральных пробах и recall ранее записанного.
+    """Record chain: drift on neutral samples and recall previously recorded.
 
-    Пробы фиксируются ДО первой записи; коллизии с новыми строками — честный дрейф
-    (в статье big-K drift растёт именно так). Состояние модели восстанавливается.
+    Samples are recorded before the first entry; collisions with new lines - honest drift
+    (This is how big-K drift grows. The model is restored..
     """
     writer = writer or HashWriter(model.spec)
     doc_seqs = [s for s in _seqs(model, docs, tokenizer) if len(s) >= 2]
     if not doc_seqs:
-        raise ValueError("chain: нет документов длиннее 2 токенов")
+        raise ValueError("Chain evaluation requires a document longer than two tokens.")
 
     snap = model.memory.snapshot()
     try:
@@ -158,7 +152,7 @@ def chain(
         for i, (doc, _seq) in enumerate(pairs):
             _write_all(model, [doc], writer)
             drift_curve.append(round(model.nll(probes) - nll_neutral_base, 6) if probes else float("nan"))
-            # recall: приобретение всех уже записанных документов относительно пустой памяти
+            # recall: purchase of all previously recorded documents relating to empty memory
             gains = [nll_docs_base[j] - model.nll([pairs[j][1]]) for j in range(i + 1)]
             recall_curve.append(round(float(np.mean(gains)), 6))
             immediate_gains.append(gains[-1])
@@ -190,10 +184,10 @@ def run_suite(
     tokenizer=None,
     chain_steps: int | None = None,
 ) -> dict:
-    """Полный набор протоколов над одним корпусом (для CLI `atomicng eval`)."""
+    """Complete set of protocols over one enclosure (for CLI) `atomicng eval`)."""
     docs = list(docs)
     if len(docs) < 2:
-        raise ValueError("run_suite требует ≥ 2 документов")
+        raise ValueError("The evaluation suite requires at least two documents.")
     return {
         "acquisition": acquisition(model, docs, writer=writer, tokenizer=tokenizer),
         "distraction": distraction(
@@ -208,8 +202,8 @@ def run_suite(
 
 
 def spec_of(model) -> TableSpec:
-    """Спека модели (удобство для CLI/адаптеров)."""
+    """Return the model table specification for the CLI and adapters."""
     spec = getattr(model, "spec", None)
     if not isinstance(spec, TableSpec):
-        raise ValueError("у модели нет .spec (TableSpec)")
+        raise ValueError("The model does not expose a TableSpec as .spec.")
     return spec

@@ -1,6 +1,6 @@
-"""Сборка docs-сайта: собирает site_docs/ из корневых MD (единый источник истины) → mkdocs build.
+"""Building a Docs Site: Collects a Site_docs/ The MD (Single Source of Truth) → Mkdocs build.
 
-Запуск: python scripts/build_docs.py [--serve]   (требует mkdocs-material)
+Launch: Python scripts/build_docs.py [--serve]   (requires mkdocs-material)
 """
 from __future__ import annotations
 
@@ -27,10 +27,10 @@ def assemble() -> None:
     SITE_DOCS.mkdir()
     for src, dst in PAGES.items():
         text = (ROOT / src).read_text(encoding="utf-8")
-        # ссылки на локальные файлы репо → якоря GitHub (в сайте недоступны)
+        # Links to local repo files → GitHub anchors (not available on the site))
         text = text.replace("](../FRAMEWORK_PLAN.md)", "](https://github.com/Akseleu-J/atomicng#readme)")
         (SITE_DOCS / dst).write_text(text, encoding="utf-8")
-    print("site_docs собран:", sorted(p.name for p in SITE_DOCS.iterdir()))
+    print("site_docs assembled:", sorted(p.name for p in SITE_DOCS.iterdir()))
 
 
 def main() -> int:

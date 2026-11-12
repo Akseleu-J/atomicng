@@ -1,34 +1,18 @@
-# План анонса AtomicNG 1.0.0 (по playbook стандартов ниши)
+# AtomicNG 1.0.0 announcement plan
 
-Принципы из опыта llama.cpp / Unsloth / vLLM / ExLlama: техническая честность без хайпа,
-реальные числа с воспроизводимостью, нулевой порог входа (Colab one-click), attribution
-автору метода, честная секция ограничений, ответы на ВСЕ комментарии первые 24 часа.
+Lead with what the project does, cite the paper, and link to reproducible results and the Colab notebook. Describe the limits of the TPU and vLLM validation. Reserve time to answer questions during the first 24 hours.
 
-## Порядок и площадки
+| # | Venue | Format | Timing |
+|---|---|---|---|
+| 1 | r/LocalLLaMA | Project overview, repository link, and calibration results | Tuesday to Thursday, 13:00–15:00 UTC |
+| 2 | r/LLMDevs | Developer post on the API, plugins, and package | 3–5 days after the first post |
+| 3 | Hacker News | Short Show HN post and repository link | Morning Eastern Time |
+| 4 | r/MachineLearning | Research post with the paper and evaluation scope | After initial feedback |
+| 5 | Habr | Full tutorial in the Machine Learning hub | Daytime |
+| 6 | X and Bluesky | Short thread with a demo and a Colab link | Alongside the first post |
+| 7 | LocalLLaMA, llama.cpp, and Unsloth Discord communities | Brief showcase in the relevant channel | After the first post |
+| 8 | GitHub Discussions | Release announcement | At launch |
 
-| # | Канал | Формат | Flair/тег | Когда | Нюансы |
-|---|---|---|---|---|---|
-| 1 | **r/LocalLLaMA** (~1M) | пост + GitHub-ссылка | `Resources` | вт–чт, 13:00–15:00 UTC | главное сообщество; хейтит хайп без бенчей, любит честные ограничения; НЕ кросспостить тот же текст |
-| 2 | **r/LLMDevs** | пост (dev-акцент) | — | +3–5 дней после #1 | фреймворк-аудитория: API, плагины, PyPI |
-| 3 | **Hacker News** | `Show HN: AtomicNG – forward-only memory writes for LLMs` | — | вт–чт утром ET | короткий текст, ссылка на GitHub, первая страница = тысячи звёзд; отвечать вежливо и сухо |
-| 4 | **r/MachineLearning** | Research-пост | `[R]` | после отклика #1 | требует arXiv-ссылку метода; тон академический |
-| 5 | **Habr** (RU) | хаб «Машинное обучение» | — | любой день | полный туториал на русском; аудитория владельца |
-| 6 | **X/Bluesky** | тред 3–5 постов | #LocalLLM #OpenSource | одновременно с #1 | GIF демо + Colab-ссылка |
-| 7 | Discord: LocalLLaMA, llama.cpp, Unsloth | сообщение в #projects/#showcase | — | после #1 | коротко + ссылка на реддит-тред |
-| 8 | GitHub Discussions | announcements | — | сразу | закрепить в репо |
+Tailor each post to its venue. Use numbers from [CALIBRATION.md](../CALIBRATION.md), attribute the method to Hao Wu, and distinguish the TPU D1 harness from full BPTT training. The current vLLM path exports a merged table and exposes a plugin provider. Engine-graph integration remains upstream work.
 
-## Правила выживания в r/LocalLLaMA
-
-1. Заголовок: что это + чем необычно, без слов «революционный».
-2. Первый абзац — суть в 2 предложениях + ссылка на GitHub.
-3. Числа — только из CALIBRATION.md (воспроизводимые); « trained writer с acquisition» — прямым текстом.
-4. Обязательная секция «What it's NOT» (нет хука в граф vLLM — upstream; BPTT на TPU-чипе — после пары версий).
-5. Attribution: метод Hao Wu (arXiv:2610.31125), мы — реализация+фреймворк.
-6. Colab one-click в топе поста — конверсия решается им.
-7. Отвечать на комментарии 24ч (стандарт llama.cpp — Iddo сам отвечал годами).
-
-## Что готовит владелец заранее
-
-- Скриншот/GIF: `atomicng smoke` в терминале или Colab-ноутбук в действии;
-- Убедиться, что README рендерит бейджи и таблицу;
-- PyPI-страница: описание берётся из README — проверить рендер на pypi.org/project/atomicng.
+Before posting, prepare a screenshot or GIF of the smoke check or notebook, check the README rendering, and verify the package page.

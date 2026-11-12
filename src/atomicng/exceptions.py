@@ -1,20 +1,20 @@
-"""Иерархия ошибок atomicng (P2: каждая ошибка объясняет, что делать)."""
+"""Exception types for AtomicNG."""
 
 
 class AtomicNGError(Exception):
-    """Базовая ошибка atomicng."""
+    """The basic atomicng error."""
 
 
 class SpecError(AtomicNGError):
-    """Некорректная или несовместимая спецификация таблицы."""
+    """Incorrect or incompatible table specification."""
 
 
 class OverlayError(AtomicNGError):
-    """Повреждённый, неподписанный/несовместимый .atomicng-оверлей."""
+    """A corrupt, unsigned, or incompatible .atomicng overlay."""
 
 
 class GuardViolation(AtomicNGError):
-    """Нарушена политика записи (guards). Атрибут violations — список деталей."""
+    """The security policy is violated.."""
 
     def __init__(self, message: str, violations: list[str] | None = None) -> None:
         super().__init__(message)
@@ -22,12 +22,12 @@ class GuardViolation(AtomicNGError):
 
 
 class BudgetExceeded(GuardViolation):
-    """Исчерпан бюджет оверлея (строки/записи)."""
+    """The overlay row or write budget was exhausted."""
 
 
 class BackendError(AtomicNGError):
-    """Бэкенд недоступен или модель не поддерживается. Подсказка — в сообщении."""
+    """Backend unavailable or model unsupported.Hint - in message."""
 
 
 class PublishRejected(AtomicNGError):
-    """Safety-gate отклонил публикацию оверлея (drift/hot-rows/verify не прошли)."""
+    """Safety-gate rejects publication of overlay (drift/hot-rows/verify failed)."""

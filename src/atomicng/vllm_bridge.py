@@ -1,14 +1,8 @@
-"""Мост к vLLM: нативная поддержка оверлеев через официальный механизм плагинов.
+"""Export a merged n-gram table and expose it through the vLLM plugin entry point.
 
-Три пути интеграции (docs/vllm.md):
-1. **Merged table** — `atomicng export-vllm` собирает полную таблицу T⁰+Δ (npz/safetensors
-   + config.json), vLLM-раннер подмешивает её при загрузке модели;
-2. **general plugin** — пакет регистрирует entry-point `vllm.general_plugins`; при старте
-   `vllm serve` плагин читает `VLLM_ATOMICNG_OVERLAY` и отдаёт провайдер merged-таблицы;
-3. **upstream Engram-путь** — PR в vLLM для моделей с заводской таблицей (Track B, v1.0).
-
-Модуль НЕ импортирует vllm (плагин вызывается движком, а не наоборот) — зависимость
-односторонняя, Windows-разработка и тесты возможны без vLLM.
+The plugin reads VLLM_ATOMICNG_OVERLAY and provides the merged-table loader.
+See docs/vllm.md for setup and the upstream Engram proposal. This module can
+be imported and tested without vLLM.
 """
 from __future__ import annotations
 
@@ -26,16 +20,16 @@ BRIDGE_VERSION = 1
 
 
 def load_overlay(path: str, spec: TableSpec | None = None) -> MemoryPatch:
-    """Загружает .dng-оверлей для движка (строгая валидация версии/спеки)."""
+    """Load a .dng overlay for the engine and validate its version and table specification."""
     return MemoryPatch.load_pretrained(path, spec)
 
 
 def merged_table(base_table: np.ndarray, patch: MemoryPatch) -> np.ndarray:
-    """Полная таблица T⁰+Δ (материализованный патч) — то, что подмешивает движок."""
+    """Return the materialized T⁰+Δ table for the engine."""
     full = np.asarray(base_table, dtype=np.float32).copy()
     if full.shape != (patch.spec.n_rows, patch.spec.row_width):
         raise ValueError(
-            f"базовая таблица {full.shape} не совпадает со спекой "
+            f"base-table {full.shape} not matching the stew "
             f"({patch.spec.n_rows}, {patch.spec.row_width})"
         )
     patch.materialize()
@@ -47,7 +41,7 @@ def merged_table(base_table: np.ndarray, patch: MemoryPatch) -> np.ndarray:
 def merged_table_from_overlay(
     base_table: np.ndarray, overlay_path: str, spec: TableSpec | None = None
 ) -> tuple[np.ndarray, MemoryPatch]:
-    """ Convenience для плагина: оверлей с диска → merged таблица."""
+    """ Convenience for plugin: overlays from disk → merged table."""
     patch = load_overlay(overlay_path, spec)
     return merged_table(base_table, patch), patch
 
@@ -55,7 +49,7 @@ def merged_table_from_overlay(
 def config_for_vllm(
     patch: MemoryPatch, model_id: str, merged_path: str, overlay_path: str | None = None
 ) -> dict:
-    """Манифест для vLLM-раннера: что подмешивать и откуда."""
+    """Manifesto for vLLM-runner: what to mix and where to get it."""
     return {
         "bridge_version": BRIDGE_VERSION,
         "model": model_id,
@@ -73,7 +67,7 @@ def export_for_vllm(
     base_table: np.ndarray, patch: MemoryPatch, out_dir: str, *,
     model_id: str, overlay_path: str | None = None,
 ) -> Path:
-    """Собирает артефакты для vLLM: merged таблицу (.npz) + config.json. Возвращает каталог."""
+    """Write the merged NPZ table and vLLM configuration and return the output directory."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     merged = merged_table(base_table, patch)
@@ -86,17 +80,17 @@ def export_for_vllm(
 
 
 def vllm_general_plugins() -> dict:
-    """Entry-point `vllm.general_plugins` (vLLM ≥ 0.6): движок вызывает при старте.
+    """Entry-point `vllm.general_plugins` (vLLM ≥ 0.6: engine calls at start.
 
-    Если задан VLLM_ATOMICNG_OVERLAY — возвращает провайдер merged-таблицы; иначе пустой dict
-    (плагин безвреден при отсутствии оверлея).
+    If given the VLLM_ATOMICNG_OVERLAY — returns the merged table provider; otherwise, the empty dict
+    (Plugin is harmless in the absence of overlay).
     """
     overlay = os.environ.get(OVERLAY_ENV)
     if not overlay:
         return {}
     if not Path(overlay).exists():
         raise FileNotFoundError(
-            f"{OVERLAY_ENV} указывает на несуществующий оверлей: {overlay!r}"
+            f"{OVERLAY_ENV} pointing to a non-existent overlay: {overlay!r}"
         )
 
     def atomicng_merged_table_provider(base_table: np.ndarray, spec: TableSpec | None = None):

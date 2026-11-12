@@ -8,18 +8,18 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-# локальные прогоны и артефакты
+# squash
 runs/
 kaggle-evidence/
 
-# payloads ночного запуска (публикуются через Kaggle, не через git)
+# Night-Run Payloads (published through Kaggle, not through git))
 kaggle-night/
 kaggle-night-cpu/
 kaggle-night-gpu/
 kaggle-night-tpu/
 kaggle-night-verify/
 
-# среда
+# medium
 .env
 .env.*
 site_docs/

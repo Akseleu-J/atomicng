@@ -1,13 +1,13 @@
-"""atomicng — forward-only continual writing into a language model's native n-gram memory.
+"""AtomicNG provides forward-only writes to a language model's n-gram memory.
 
-Метод статьи arXiv:2610.31125: T = T⁰ + Δ, запись только forward-проходами,
-очистка Δ побитово возвращает исходную модель.
+The frozen base table T⁰ and sparse patch Δ form the effective table T = T⁰ + Δ.
+Clearing Δ restores the base model bit for bit. The core uses NumPy and loads
+the optional PyTorch layer lazily.
 
-Публичный API v0.2a (Core — чистый NumPy; torch-слой импортируется лениво):
-    model = atomicng.TinyModel()                      # бэкенд для CI; HF — через atomicng.backends.hf
+    model = atomicng.TinyModel()
     report = atomicng.write(model, evidence, policies=..., metrics=...)
     model.memory.save_pretrained("out.atomicng")
-    atomicng.publish_check(model)                     # safety-gate перед публикацией
+    atomicng.publish_check(model)
 """
 import time
 
@@ -39,7 +39,7 @@ from .testing import HashWriter
 from .verify import VerifyReport, verify_deletion
 from .vllm_bridge import export_for_vllm, merged_table, vllm_general_plugins
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 __all__ = [
     "AuditLog",
@@ -98,7 +98,7 @@ __all__ = [
 
 
 def attach_memory(model, spec: TableSpec | None = None):
-    """Подключает разреженный патч Δ к модели (у TinyModel она уже есть)."""
+    """Connects the sparse patch Δ to the model (TinyModel already has it).)."""
     if getattr(model, "memory", None) is None:
         model.memory = MemoryPatch(spec or model.spec)
     return model
@@ -115,15 +115,15 @@ def write(
     metrics: MetricsRegistry | None = None,
     source: str | None = None,
 ) -> WriteReport:
-    """Записывает свидетельство (str или список строк) в память. Только forward-вычисления.
+    """Write the certificate (str or list of lines) in memory. forward-only calculations..
 
-    policies: guards (бюджеты/капы); audit: JSONL-журнал (S4);
-    undo: pre-image журнал для точного отката; metrics: реестр мониторинга;
-    source: идентификатор источника в provenance оверлея.
+    policies: guards (budgets and caps); audit: JSONL journal (S4));
+    undo: pre-image log for precise rollback; metrics: monitoring registry;
+    Source: Source ID in provenance overlay.
     """
     texts = [evidence] if isinstance(evidence, str) else list(evidence)
     if not texts:
-        raise ValueError("пустое свидетельство")
+        raise ValueError("Evidence must contain at least one non-empty document.")
     writer = writer or HashWriter(model.memory.spec)
     rule = rule or D1Rule()
     events = writer.events(texts)
@@ -150,10 +150,10 @@ def write(
 
 
 def revert_last(model, undo: UndoJournal) -> list[int]:
-    """Точный откат последнего блока записи (pre-image journal)."""
+    """Exact rollback of the last block of the record (pre-image journal))."""
     return undo.revert_last(model.memory)
 
 
 def clear_memory(model) -> None:
-    """Kill-switch: Δ=0, модель структурно равна базовой."""
+    """Kill-switch: Δ=0, model structurally equal to baseline."""
     model.memory.clear()

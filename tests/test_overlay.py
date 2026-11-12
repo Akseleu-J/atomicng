@@ -1,4 +1,4 @@
-"""Тесты оверлеев: integrity-манифест, merge по D1-политике, provenance."""
+"""Overlay Tests: Integrity Manifesto, D1 Politics Merge, Provenance."""
 from __future__ import annotations
 
 import sys
@@ -26,10 +26,10 @@ def test_integrity_manifest_detects_corruption(tmp_path):
     model.memory.save_pretrained(str(path))
 
     data = dict(np.load(path, allow_pickle=False))
-    data["deltas"][0, 0] += 1.0  # порча
+    data["deltas"][0, 0] += 1.0  # spoilage
     np.savez(path, **data)
 
-    with pytest.raises(atomicng.OverlayError, match="целостности"):
+    with pytest.raises(atomicng.OverlayError, match="integrity"):
         MemoryPatch.load_pretrained(str(path))
 
 
@@ -43,7 +43,7 @@ def test_merge_d1_policy_and_provenance(tmp_path):
 
     p1.merge(p2, gate=0.5)
     assert rows1 <= set(p1.row_ids()) and rows2 <= set(p1.row_ids())
-    # пустые в базе строки: Δ = gate·v (D1 с пустой базой)
+    # empty rows in the base: Δ = gate·v (D1 with an empty base))
     for r in rows2 - rows1:
         assert np.allclose(p1.get(r), 0.5 * p2.get(r), atol=1e-6)
     assert any(s.startswith("merge@") for s in p1.sources)

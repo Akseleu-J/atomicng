@@ -1,26 +1,17 @@
-# Habr-статья (RU) — каркас
+# Habr tutorial outline
 
-Заголовок: **AtomicNG: записываем новые знания в n-gram память LLM без градиентов — и откатываем побитово**
+### Working title
+AtomicNG updates an LLM's n-gram memory with forward passes and bit-exact rollback
 
-Хаб: «Машинное обучение». Формат: туториал + разбор метода. Объём: 6–10 минут чтения.
+### Venue
+Machine Learning hub. Plan for a 6–10 minute tutorial.
 
-## Структура
+1. Introduce the problem of adding facts to an existing model. Explain where fine-tuning and retrieval place the new information.
+2. Explain Hao Wu's Delta N-gram method (arXiv:2610.31125). Cover T = T⁰ + Δ, the writer, D1 block averaging, and what clearing Δ restores.
+3. Introduce AtomicNG's NumPy core, write guards, exact undo, conformance tests, and evaluation protocols.
+4. Show the quickstart and a screenshot of the CLI or HTML report.
+5. Use the calibration table and describe the 860-step writer run, including the observed +0.0422 acquisition result on one document.
+6. Explain the remaining vLLM engine hook, the PyTorch/XLA version constraint, and the scope of the acquisition results.
+7. Link to GitHub, the package, the docs, and the Colab notebook.
 
-1. **Проблема** (2 абзаца): файнтюн для новых фактов — дорого и разрушает старые навыки;
-   RAG хранит текст снаружи, но не в движке. А что если у модели есть «родная» n-gram память?
-2. **Метод** (со ссылкой на arXiv:2610.31125, Hao Wu): T = T⁰ + Δ; writer ~4M параметров;
-   D1 block averaging (выпуклая комбинация ⇒ ограниченность); forward-only; очистка Δ ⇒
-   побитовый возврат.
-3. **Фреймворк AtomicNG** (Apache-2.0, pip install atomicng): ядро на NumPy, guards,
-   undo-journal, FIDELITY-тесты соответствия статье, протоколы оценки.
-4. **Код** (5 строк quickstart) + скриншот вывода.
-5. **Калибровка** — таблица из CALIBRATION.md (все среды реальные) + обученный writer
-   (860 шагов, acquisition +0.0422).
-6. **Честные ограничения** (vLLM-хук upstream, BPTT на чипе после пары версий, сотни шагов
-   до acquisition).
-7. Ссылки: GitHub, PyPI, Colab, docs-сайт.
-
-## Тон
-
-Без маркетинга; каждое число — из CALIBRATION.md; упомянуть attribution автору метода.
-Habr любит: архитектурные схемы (диаграмма T = T⁰ + Δ), JSON-примеры оверлея, протоколы тестов.
+Use the architecture diagram, an overlay manifest example, and the test protocol to support the walkthrough.

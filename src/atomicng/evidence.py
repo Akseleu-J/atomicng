@@ -1,8 +1,7 @@
-"""Конструктор свидетельств (T10а — то, чего нет ни у одного конкурента).
+"""Build evidence blocks for training and writes.
 
-Документ (последовательность токенов) → блоки «query-префикс 128 + продолжение до 512»
-по протоколу обучения/записи статьи. Токенизатор — на выбор пользователя; для беззависимостных
-сценариев есть ByteTokenizer (UTF-8 байты → id, детерминированный).
+The paper uses blocks of up to 512 tokens with a 128-token query prefix.
+ByteTokenizer provides deterministic UTF-8 byte IDs for standalone examples.
 """
 from __future__ import annotations
 
@@ -12,7 +11,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Block:
-    """Блок свидетельства: query — префикс-контекст, continuation — часть для записи/предсказания."""
+    """An evidence block contains a query prefix and a continuation for writing or prediction."""
 
     query: list[int]
     continuation: list[int]
@@ -32,12 +31,12 @@ def build_blocks(
     query_prefix: int = 128,
     stride: int | None = None,
 ) -> list[Block]:
-    """Режет токены на блоки статьи: 512 токенов, из них 128 — query-префикс.
+    """Cuts tokens into blocks of article: 512 tokens, of which 128 are query prefix.
 
-    stride по умолчанию = block_size − query_prefix (непересекающиеся продолжения).
+    stride by default = block_size − query_prefix (intersecting).
     """
     if block_size <= query_prefix:
-        raise ValueError(f"block_size={block_size} должен быть больше query_prefix={query_prefix}")
+        raise ValueError(f"block_size={block_size} must exceed query_prefix={query_prefix}.")
     if not tokens:
         return []
     stride = stride or (block_size - query_prefix)
@@ -69,7 +68,7 @@ def build_blocks_from_texts(
     source_prefix: str = "doc",
     **kwargs,
 ) -> list[Block]:
-    """Удобство: строки → байты-токены → блоки (для tiny-пайплайна и тестов)."""
+    """Convenience: strings → byte-tokens → blocks (for tiny-pipeline and tests))."""
     tokenizer = tokenizer or ByteTokenizer()
     blocks: list[Block] = []
     for i, text in enumerate(texts):
@@ -78,11 +77,11 @@ def build_blocks_from_texts(
 
 
 class ByteTokenizer:
-    """Детерминированный токенизатор без зависимостей: UTF-8 байты, свёрнутые в словарь."""
+    """Deterministic tokenizer without dependencies: UTF-8 bytes folded into a dictionary."""
 
     def __init__(self, vocab_size: int = 512) -> None:
         if vocab_size < 256:
-            raise ValueError("vocab_size ByteTokenizer должен быть >= 256 (байты)")
+            raise ValueError("ByteTokenizer requires a vocabulary of at least 256 byte values.")
         self.vocab_size = vocab_size
 
     def encode(self, text: str) -> list[int]:

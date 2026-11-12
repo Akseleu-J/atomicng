@@ -1,8 +1,7 @@
-"""Self-contained HTML-отчёт мониторинга (`atomicng monitor`): один файл, без JS-зависимостей.
+"""Build the standalone HTML report used by atomicng monitor.
 
-Содержание: состояние патча Δ (строки, нормы, reuse, provenance), гистограмма норм строк
-(inline SVG), метрики записи (из MetricsRegistry или JSONL), вердикт safety-gate (если
-дана модель). Файл можно приложить к оверлею в .dng-zoo как «сертификат здоровья».
+The report displays patch rows, norms, reuse, provenance, an inline SVG
+histogram, optional write metrics, and the verification result when available.
 """
 from __future__ import annotations
 
@@ -11,7 +10,7 @@ import json
 import time
 from pathlib import Path
 
-from .memory import MemoryPatch  # noqa: TC001 — тип в публичной сигнатуре
+from .memory import MemoryPatch  # noqa: TC001 is a type in the public signature
 
 _CSS = """
 body{font-family:Segoe UI,system-ui,sans-serif;margin:2rem;max-width:900px;color:#1a1a2e;background:#fafafa}
@@ -35,12 +34,12 @@ def _badge(ok: bool | None, ok_text: str, bad_text: str) -> str:
 
 
 def _norm_histogram_svg(patch: MemoryPatch, width: int = 860, height: int = 120) -> str:
-    """Гистограмма норм строк патча (log-шкала) — детектор «форматных строк» визуально."""
+    """Plot patch row norms on a log scale to highlight hot rows."""
     import numpy as np
 
     norms = np.asarray([float(np.linalg.norm(v)) for v in patch._rows.values()])
     if norms.size == 0:
-        return "<p>патч пуст</p>"
+        return "<p>Empty patch</p>"
     log_norms = np.log10(np.maximum(norms, 1e-9))
     lo, hi = float(log_norms.min()), float(log_norms.max())
     bins = 24
@@ -70,8 +69,8 @@ def build_report(
     verify_passed: bool | None = None,
     title: str = "AtomicNG Monitor",
 ) -> str:
-    """Собирает HTML-отчёт. metrics_records — записи MetricsRegistry (опционально)."""
-    from . import __version__  # лениво: пакет к этому моменту полностью загружен
+    """Build an HTML report with optional write metrics."""
+    from . import __version__  # Lazy: the package is fully loaded by this time
 
     stats = patch.stats()
     rows_rows = ""
@@ -82,44 +81,44 @@ def build_report(
     for r, norm, count in norms:
         rows_rows += f"<tr><td><code>{r}</code></td><td>{norm:.4f}</td><td>{count}</td></tr>"
 
-    metrics_html = "<p>метрики записи не подключены</p>"
+    metrics_html = "<p>No write metrics available</p>"
     if metrics_records:
         n = len(metrics_records)
         gates = [r.get("mean_gate", 0.0) for r in metrics_records]
         eps = [r.get("events_per_s", 0.0) for r in metrics_records]
         hot_total = sum(len(r.get("hot_rows", [])) for r in metrics_records)
         metrics_html = (
-            f'<div class="kv"><div><b>{n}</b><span>записей</span></div>'
-            f"<div><b>{sum(gates) / n:.3f}</b><span>средний гейт</span></div>"
+            f'<div class="kv"><div><b>{n}</b><span>writes</span></div>'
+            f"<div><b>{sum(gates) / n:.3f}</b><span>mean gate</span></div>"
             f"<div><b>{sum(eps) / n:.0f}</b><span>events/s</span></div>"
-            f"<div><b>{hot_total}</b><span>hot-строк всего</span></div></div>"
+            f"<div><b>{hot_total}</b><span>total hot rows</span></div></div>"
         )
 
-    verify_html = "<p>модель не подключена — verify недоступен</p>"
+    verify_html = "<p>Attach a model to run verification</p>"
     if verify_message is not None:
         verify_html = _badge(verify_passed, verify_message, verify_message)
 
     sources = ", ".join(html.escape(s) for s in patch.sources[-8:]) or "—"
-    return f"""<!doctype html><html lang="ru"><head><meta charset="utf-8">
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <title>{html.escape(title)}</title><style>{_CSS}</style></head><body>
-<h1>{html.escape(title)} {_badge(stats["n_rows"] > 0, "патч активен", "патч пуст")}</h1>
-<p>спека <code>{html.escape(patch.spec.name)}</code> · d={patch.spec.row_width} · N={patch.spec.n_rows} · decay={patch.decay}</p>
+<h1>{html.escape(title)} {_badge(stats["n_rows"] > 0, "Active patch", "Empty patch")}</h1>
+<p>Spec <code>{html.escape(patch.spec.name)}</code> · d={patch.spec.row_width} · N={patch.spec.n_rows} · decay={patch.decay}</p>
 
-<h2>Состояние памяти Δ</h2>
+<h2>Memory state Δ</h2>
 <div class="kv">
-<div><b>{stats["n_rows"]}</b><span>строк</span></div>
-<div><b>{stats["total_writes"]}</b><span>записей</span></div>
-<div><b>{stats["reuse_ratio"]:.1%}</b><span>reuse строк</span></div>
-<div><b>{stats["max_norm"]:.4f}</b><span>макс. норма</span></div>
-<div><b>{stats["mean_norm"]:.4f}</b><span>средняя норма</span></div>
+<div><b>{stats["n_rows"]}</b><span>rows</span></div>
+<div><b>{stats["total_writes"]}</b><span>writes</span></div>
+<div><b>{stats["reuse_ratio"]:.1%}</b><span>row reuse</span></div>
+<div><b>{stats["max_norm"]:.4f}</b><span>maximum norm</span></div>
+<div><b>{stats["mean_norm"]:.4f}</b><span>mean norm</span></div>
 <div><b>{stats["clock"]}</b><span>block clock</span></div>
 </div>
-<h2>Гистограмма норм строк (hot-row детектор)</h2>
+<h2>Row norm histogram (hot-row detection)</h2>
 {_norm_histogram_svg(patch)}
-<h2>Топ-10 строк по норме</h2>
+<h2>Top 10 rows by norm</h2>
 <table><tr><th>row id</th><th>‖Δ_j‖</th><th>c_j</th></tr>{rows_rows or "<tr><td colspan=3>—</td></tr>"}</table>
 
-<h2>Метрики записи</h2>
+<h2>Write metrics</h2>
 {metrics_html}
 
 <h2>Safety-gate</h2>
@@ -127,18 +126,18 @@ def build_report(
 
 <h2>Provenance</h2>
 <p><code>{sources}</code></p>
-<footer>AtomicNG {__version__} · сгенерировано {time.strftime("%Y-%m-%d %H:%M:%S")}</footer>
+<footer>AtomicNG {__version__} · generated {time.strftime("%Y-%m-%d %H:%M:%S")}</footer>
 </body></html>"""
 
 
 def write_report(path: str, **kwargs) -> str:
-    """build_report → файл; возвращает путь."""
+    """build_report → file; returns path."""
     Path(path).write_text(build_report(**kwargs), encoding="utf-8")
     return path
 
 
 def load_metrics_jsonl(path: str) -> list[dict]:
-    """Читает экспорт MetricsRegistry/JsonlExporter."""
+    """Reading exports MetricsRegistry/JsonlExporter."""
     records = []
     for line in Path(path).read_text(encoding="utf-8").splitlines():
         if line.strip():

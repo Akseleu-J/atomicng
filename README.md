@@ -6,7 +6,7 @@
 [![Colab TPU](https://img.shields.io/badge/Colab-TPU%20calibration-F9AB00?logo=google-colab)](https://colab.research.google.com/github/Akseleu-J/atomicng/main/notebooks/tpu_calibration.ipynb)
 [![vLLM](https://img.shields.io/badge/vLLM-general__plugin-red)](docs/vllm.md)
 
-**AtomicNG** implements atomic, forward-only continual writes to a language model's n-gram memory. It follows the method described in [arXiv:2610.31125](https://arxiv.org/abs/2610.31125). The pretrained n-gram hash table `T⁰` stays frozen, and writes accumulate in a sparse patch `Δ` such that `T = T⁰ + Δ`. Write guards enforce budgets and caps before the patch changes. Clearing `Δ` restores the base model bit for bit.
+**AtomicNG** implements atomic, forward-only continual writes to a language model's n-gram memory. It follows the method described in [arXiv:2610.31125](https://arxiv.org/abs/2610.31125) (Hao Wu) — **an independent implementation**, not affiliated with the author; reference code lives at `af-74413592/delta-ngram`. The pretrained n-gram hash table `T⁰` stays frozen, and writes accumulate in a sparse patch `Δ` such that `T = T⁰ + Δ`. Write guards enforce budgets and caps before the patch changes. Clearing `Δ` restores the base model bit for bit.
 
 The Apache-2.0 core uses NumPy. The optional PyTorch layer provides writers and Hugging Face integration. See the [vLLM integration guide](docs/vllm.md) for the general plugin.
 
@@ -94,7 +94,7 @@ atomicng smoke
 | Immutable base table | Writes affect only the sparse `Δ` store. |
 | Atomic guards | Row and write budgets and hard caps are checked before the patch changes. |
 | Write report | Each write reports rows, gates, norms, and hot-row flags. |
-| Exact undo | `atomicng.revert_last` restores the last block from its pre-image journal. |
+| Exact undo | `atomicng.revert_last` restores the last block from its pre-image journal. **LIFO only**: exact for the most recent block; older blocks whose rows were touched later cannot be reverted exactly (D1 depends on current row state). |
 | Full reset | `model.memory.clear()` removes the full patch. |
 | Overlay integrity | The format stores data only (NPZ and JSON) with a SHA-256 manifest. |
 | Publication checks | Verification must pass, and drift and hot-row counts must stay within their limits. |

@@ -1,7 +1,7 @@
-"""Протоколы статьи: acquisition / distraction / chain — консистентность и восстановление состояния.
+"""Article protocols: acquisition / distraction / chain - consistency and state recovery.
 
-Направления метрик (delta>0, retention→1) зависят от ОБУЧЕННОГО writer'а и проверяются
-в torch-тестах; здесь — механика протоколов на ядре.
+Metric directions (delta)>0, retention→1 depend on the trained writer and are checked
+in torch tests; here is the mechanics of protocols on the kernel.
 """
 from __future__ import annotations
 
@@ -30,12 +30,12 @@ def test_nll_changes_with_memory_and_is_finite():
     model = TinyModel()
     doc = "kangaroo navigation document"
     writer = atomicng.HashWriter(model.spec)
-    seq = writer.tokenize(doc)  # запрос с биграммами самого документа: они адресуют записанные строки
+    seq = writer.tokenize(doc)  # request with bigrams of the document itself: they address the written lines
     nll_before = model.nll([seq])
     assert np.isfinite(nll_before)
     atomicng.write(model, doc, writer=writer)
     nll_after = model.nll([seq])
-    assert np.isfinite(nll_after) and nll_after != nll_before, "память не изменила NLL документа"
+    assert np.isfinite(nll_after) and nll_after != nll_before, "The memory did not change the NLL document"
 
 
 def test_acquisition_consistency_and_restore():
@@ -45,7 +45,7 @@ def test_acquisition_consistency_and_restore():
     assert set(report) >= {"nll_empty", "nll_self", "nll_donor", "delta_empty", "delta_donor"}
     assert report["delta_empty"] == pytest.approx(report["nll_empty"] - report["nll_self"], abs=1e-6)
     assert report["delta_donor"] == pytest.approx(report["nll_donor"] - report["nll_self"], abs=1e-6)
-    assert model.memory.checksum() == checksum, "протокол обязан восстанавливать состояние"
+    assert model.memory.checksum() == checksum, "protocol must restore the state"
 
 
 def test_acquisition_needs_donor():

@@ -1,6 +1,6 @@
-"""Тесты моста к vLLM: merged-таблица, плагин entry-point, export-артефакты.
+"""Bridge to vLLM tests: merged table, entry-point plugin, export artifacts.
 
-vllm как зависимость НЕ нужен: плагин вызывается движком, а не наоборот.
+vllm as a dependency is NOT needed: the plugin is called by the engine, not vice versa.
 """
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ def test_merged_table_shape_mismatch_rejected(tmp_path):
 def test_plugin_env_provider_and_absence(monkeypatch, tmp_path):
     model, overlay = _model_with_overlay(tmp_path)
     monkeypatch.delenv(OVERLAY_ENV, raising=False)
-    assert vllm_general_plugins() == {}  # без оверлея плагин безвреден
+    assert vllm_general_plugins() == {}  # Overlay-free plugin is harmless
 
     monkeypatch.setenv(OVERLAY_ENV, overlay)
     plugins = vllm_general_plugins()
@@ -88,10 +88,10 @@ def test_config_for_vllm_fields(tmp_path):
 
 
 def test_entry_point_registered():
-    """Entry-point vllm.general_plugins объявлен в метаданных пакета."""
+    """Entry-point vllm.general_plugins declared in the metadata package."""
     from importlib import metadata
 
     eps = [ep for ep in metadata.entry_points(group="vllm.general_plugins")
            if ep.name == "atomicng_ngram_overlay" and "atomicng" in str(ep.value)]
-    assert eps, "entry-point vllm.general_plugins не зарегистрирован"
+    assert eps, "entry-point vllm.general_plugins not registered"
     assert eps[0].load() is vllm_general_plugins

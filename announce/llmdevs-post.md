@@ -1,11 +1,11 @@
-# r/LLMDevs — пост (dev-аудитория: API, плагины, PyPI)
+# r/LLMDevs — post (dev audience: API, plugins, PyPI))
 
-**Заголовок:**
+**Title**
 AtomicNG 1.0.0 — forward-only memory writes for LLMs (no weight edits, bit-exact rollback, vLLM plugin)
 
-**Тип:** Link → https://github.com/Akseleu-J/atomicng
+**Type:** Link → https://github.com/Akseleu-J/atomicng
 
-**Текст:**
+**Text:**
 
 I implemented "Delta N-gram" ([arXiv:2610.31125](https://arxiv.org/abs/2610.31125)) as a framework — **AtomicNG 1.0.0**, Apache-2.0, `pip install atomicng`. Core is pure NumPy (no ML framework needed for the memory layer); torch only for writers.
 

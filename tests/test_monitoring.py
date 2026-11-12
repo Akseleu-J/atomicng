@@ -1,4 +1,4 @@
-"""Тесты мониторинга: метрики записи, bench + регресс-гейт, safety-gate публикации."""
+"""Monitoring tests: recording metrics, bench + Regress Gate, Safety-gate Publications."""
 from __future__ import annotations
 
 import sys
@@ -47,7 +47,7 @@ def test_bench_sane_and_regression_gate():
     failures = atomicng.check_regression(
         {**report, "write_events_per_s": report["write_events_per_s"] / 10}, report, tolerance=1.25
     )
-    assert failures, "десятикратное замедление должно ловиться регресс-гейтом"
+    assert failures, "tenfold deceleration must be caught by the regress gate"
     assert atomicng.check_regression(report, report, tolerance=1.25) == []
 
 

@@ -1,4 +1,4 @@
-"""Track B: нативный read-out — конформность размерностям и свойствам статьи."""
+"""Track B: native read-out – conformation to the dimensions and properties of the article."""
 from __future__ import annotations
 
 import sys
@@ -22,7 +22,7 @@ def test_spec_conformance_to_paper():
     assert spec.concat_dim == 2560
     assert spec.inject_layer == 2
     with pytest.raises(ValueError):
-        NativeTableSpec(row_width=100)  # ширина зафиксирована статьёй
+        NativeTableSpec(row_width=100)  # width fixed by article
 
 
 def test_head_rows_deterministic_and_separated():
@@ -30,26 +30,26 @@ def test_head_rows_deterministic_and_separated():
     ids = [11, 29, 3, 47, 11, 29, 3, 47]
     big0 = native_head_rows(ids, spec, 0)
     tri0 = native_head_rows(ids, spec, spec.bigram_heads)
-    assert big0 == native_head_rows(ids, spec, 0)  # детерминизм
-    assert big0[0] is None and tri0[0] is None and tri0[1] is None  # прогрев ключа
+    assert big0 == native_head_rows(ids, spec, 0)  # determinism
+    assert big0[0] is None and tri0[0] is None and tri0[1] is None  # key-warming
     assert all(r is not None and 0 <= r < spec.n_rows for r in big0[1:])
-    assert any(a != b for a, b in zip(big0[2:], tri0[2:], strict=True))  # соли голов
+    assert any(a != b for a, b in zip(big0[2:], tri0[2:], strict=True))  # salt
     allh = native_rows_all_heads(ids, spec)
     assert len(allh) == 16 and all(len(h) == len(ids) for h in allh)
 
 
 def test_readout_shapes_and_paper_dims():
-    """Paper-размерности (out 10240) проверяем на meta-устройстве — без аллокации 200 МБ."""
+    """Paper-size (out 10240) check on a meta-device – without allolocation 200 MB."""
     spec = NativeTableSpec()
     with torch.device("meta"):
         ro = NativeReadOut(spec, out_dim=10240)
     assert ro.value.weight.shape == (10240, 2560)
     assert ro.key.weight.shape == (10240, 2560)
-    assert ro.conv.weight.numel() == 10240 * 4  # depthwise: канал × kernel 4
+    assert ro.conv.weight.numel() == 10240 * 4  # depthwise: channel × kernel 4
     assert ro.conv.dilation == (3,) and ro.conv.groups == 10240
-    assert ro.conv.padding == (0,)  # каузальность обеспечивается явным паддингом в forward
+    assert ro.conv.padding == (0,)  # causality is provided by a clear padding in forward
 
-    # реальный forward на маленьком out_dim (та же логика, меньше память)
+    # Real forward on the small out_dim (Same logic, less memory.)
     ro_small = NativeReadOut(spec, out_dim=64)
     out = ro_small(torch.randn(2, 12, spec.concat_dim))
     assert out.shape == (2, 12, 64)
@@ -66,8 +66,8 @@ def test_gather_uses_memory():
     patch._write_row(touched, torch.full((width,), 0.5))
     ro_mem = ro.gather(ids, lambda r: patch.get(r) if r in patch else None)
     ro_base = ro.gather(ids, lambda r: None)
-    assert torch.equal(ro_base[0], torch.zeros(spec.concat_dim))  # прогрев: нули
-    assert not torch.equal(ro_mem[3], ro_base[3])  # Δ меняет чтение
+    assert torch.equal(ro_base[0], torch.zeros(spec.concat_dim))  # warming up: zeros
+    assert not torch.equal(ro_mem[3], ro_base[3])  # Δ changes reading
     for i in range(len(ids)):
         for h in range(spec.n_heads):
             r = native_rows_all_heads(ids, spec)[h][i]

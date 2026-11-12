@@ -1,4 +1,4 @@
-"""Быстрая проверка: базовый NLL SmolLM2 на корпусном абзаце (диагностика loss в тренере)."""
+"""Quick check: basic NLL SmolLM2 on the corpus paragraph (diagnostic loss in the coach))."""
 import sys
 from pathlib import Path
 

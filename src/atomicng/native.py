@@ -1,12 +1,9 @@
-"""Нативный read-out и хэши заводской таблицы (Track B, v1.0) — по спецификации статьи.
+"""Track B n-gram hashing and native read-out.
 
-Статья (§ read-out, Eq. 2–4): таблица H=16 хэш-голов (8 биграммных + 8 триграммных, d=160
-на голову); чтение конкатенирует 16 строк в ℝ²⁵⁶⁰ и инжектирует в residual stream перед
-attention 2-го слоя: **линейный value-путь** и **gated key-путь** (RMSNorm + sign/√max floor,
-depthwise conv 4 тапа, dilation 3) с выходом ℝ¹⁰²⁴⁰.
-
-Композиция gated-пути — документированная интерпретация: в статье приведены компоненты
-(RMSNorm, floor, conv, выход), точная формула соединения не раскрыта; см. FIDELITY.md.
+The paper uses eight bigram and eight trigram heads of width 160. Concatenated
+reads form a 2,560-dimensional vector. The value and gated key paths produce a
+10,240-dimensional residual input. See FIDELITY.md for the documented
+interpretation of the gated key path.
 """
 from __future__ import annotations
 
@@ -23,7 +20,7 @@ from .paper import (
 
 
 class NativeTableSpec:
-    """Спецификация заводской таблицы: 16 голов (8+8), d=160, ключи 2–3 токена."""
+    """Specification of the factory table: 16 heads (8+8), d=160, keys 2-3 tokens."""
 
     def __init__(
         self,
@@ -35,7 +32,7 @@ class NativeTableSpec:
         inject_layer: int = 2,
     ) -> None:
         if row_width != NATIVE_ROW_WIDTH:
-            raise ValueError(f"нативная ширина строки зафиксирована статьёй: {NATIVE_ROW_WIDTH}")
+            raise ValueError(f"The paper fixes the native row width at {NATIVE_ROW_WIDTH}")
         self.name = name
         self.n_rows = n_rows
         self.row_width = row_width
@@ -52,10 +49,10 @@ class NativeTableSpec:
 def native_head_rows(
     input_ids: list[int], spec: NativeTableSpec, head: int
 ) -> list[int]:
-    """Адреса строк одной головы для каждой позиции (i ≥ order-1); None — позиции без ключа.
+    """Addresses of one head rows for each position (i ≥ order-1); None - position without a key.
 
-    Головы 0..bigram-1 хэшируют биграммы (t−1, t), головы bigram.. — триграммы (t−2, t−1, t).
-    Соль головы исключает совпадение адресов между головами.
+    Heads 0..bigram-1 hash bigrams (t−1, t), heads bigram.. - trigrams (t−2, t−1, t)).
+    Head salt eliminates the coincidence of addresses between the heads.
     """
     order = 2 if head < spec.bigram_heads else 3
     out: list[int | None] = [None] * len(input_ids)
@@ -71,12 +68,12 @@ def native_head_rows(
 
 
 def native_rows_all_heads(input_ids: list[int], spec: NativeTableSpec) -> list[list[int | None]]:
-    """(H, T): адреса строк всех 16 голов (совместимо с T⁰ H=16)."""
+    """Return row addresses as an (H, T) array for all 16 heads of T⁰."""
     return [native_head_rows(input_ids, spec, h) for h in range(spec.n_heads)]
 
 
 class NativeReadOut(nn.Module):
-    """Read-out статьи: concat(H·d) → value-путь + gated key-путь → ℝ^out_dim (10240)."""
+    """Read-out: concat(H·d) → value-path + Gated key path - R^out_dim (10240)."""
 
     def __init__(
         self,
@@ -90,7 +87,7 @@ class NativeReadOut(nn.Module):
         self.spec = spec
         self.out_dim = out_dim
         gen = torch.Generator().manual_seed(seed)
-        self.t0 = 0.02 * torch.randn(spec.n_rows, spec.row_width, generator=gen)  # T⁰ (иммутабельна)
+        self.t0 = 0.02 * torch.randn(spec.n_rows, spec.row_width, generator=gen)  # T⁰ (immutable)
         in_dim = spec.concat_dim
         self.value = nn.Linear(in_dim, out_dim, bias=False)
         self.key = nn.Linear(in_dim, out_dim, bias=False)
@@ -104,7 +101,7 @@ class NativeReadOut(nn.Module):
         nn.init.normal_(self.conv.weight, std=0.01, generator=gen)
 
     def gather(self, input_ids: list[int], memory_row_fn) -> torch.Tensor:
-        """(T, H·d): T⁰+Δ строки всех голов; позиции без ключа — нули. memory_row_fn(row)->Tensor|None."""
+        """Return (T, H·d) rows from T⁰+Δ across all heads. Positions with no key are zero. memory_row_fn(row)->Tensor|None."""
         rows = native_rows_all_heads(input_ids, self.spec)
         t = len(input_ids)
         out = torch.zeros(t, self.spec.n_heads, self.spec.row_width)
@@ -121,17 +118,17 @@ class NativeReadOut(nn.Module):
 
     @staticmethod
     def sign_sqrt_max_floor(k: torch.Tensor) -> torch.Tensor:
-        """sign/√max floor: сжатие динамического диапазона без потери знака."""
+        """sign/ √max floor: compression of dynamic range without loss of sign."""
         denom = k.abs().amax(dim=-1, keepdim=True) + 1e-6
         return torch.sign(k) * torch.sqrt(k.abs() / denom)
 
     def forward(self, concat_rows: torch.Tensor) -> torch.Tensor:
-        """(B, T, H·d) → (B, T, out_dim). Каузальность: conv смотрит только в прошлое (dilation, padding слева)."""
+        """(B, T, H·d) → (B, T, out_dim). Causalities: Conv looks only into the past (dilation, padding left))."""
         b, t, _ = concat_rows.shape
         v = self.value(concat_rows)
         k = self.norm(self.key(concat_rows))
         k = self.sign_sqrt_max_floor(k)
-        pad = (self.conv.dilation[0]) * (self.conv.kernel_size[0] - 1)  # каузальный паддинг
+        pad = (self.conv.dilation[0]) * (self.conv.kernel_size[0] - 1)  # causal
         k = k.transpose(1, 2)
         k = torch.nn.functional.pad(k, (pad, 0))
         g = self.conv(k).transpose(1, 2)

@@ -1,9 +1,7 @@
-"""Проверка неразрушаемости (P0/S3): очистка Δ возвращает базовое поведение, restore точен.
+"""Verify bit-exact deletion and patch restoration.
 
-Протокол: нейтральные последовательности генерируются ОДИН РАЗ (не адресующие строки
-патча — на плотной sidecar-таблице случайные пробы задевают записанные строки, и их
-сдвиг легитимен), затем сравниваются выходы до/после очистки на одних и тех же входах.
-Точность restore проверяется чексуммой патча — модель-независимая побитовая проверка.
+Generate neutral probes once and compare outputs on those same inputs before
+and after clearing the patch. Check the restored patch with its checksum.
 """
 from __future__ import annotations
 
@@ -22,7 +20,7 @@ class VerifyReport:
 
 
 def _make_probe(model, n_probes: int) -> Callable[[int], np.ndarray]:
-    """Единый набор входов до и после очистки: neutral_token_seqs или probe как fallback."""
+    """Reuse neutral token sequences when available. Fall back to model.probe."""
     seqs = None
     if hasattr(model, "neutral_token_seqs"):
         seqs = model.neutral_token_seqs(n_probes)
@@ -44,11 +42,11 @@ def verify_deletion(model, n_probes: int = 8) -> VerifyReport:
     probes_ok = bool(np.array_equal(before, after))
     restore_ok = checksum_restored == checksum_before
     if probes_ok and restore_ok:
-        message = "откат побитовый (пробы нейтральны, restore точен)"
+        message = "Bit-exact rollback verified. Neutral probe outputs and the restored patch match."
     elif not probes_ok:
-        message = "ОШИБКА: очистка Δ изменила выходы на нейтральных пробах"
+        message = "Clearing Δ changed the outputs on neutral probes."
     else:
-        message = "ОШИБКА: restore не восстановил патч байт-в-байт"
+        message = "Restoring the patch changed its checksum."
     return VerifyReport(
         passed=probes_ok and restore_ok,
         n_probes=n_probes,

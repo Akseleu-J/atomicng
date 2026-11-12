@@ -1,18 +1,19 @@
-# Примеры AtomicNG
+# AtomicNG examples
 
-| Пример | Что показывает |
+| Example | What it covers |
 |---|---|
-| [QUICKSTART.ipynb](../notebooks/QUICKSTART.ipynb) | базовый цикл: запись → guards → verify → протоколы → safety-gate (5 минут, CPU) |
-| [tpu_calibration.ipynb](../tpu_calibration.ipynb) | TPU-калибровка на Colab: [один клик](https://colab.research.google.com/github/Akseleu-J/atomicng/main/notebooks/tpu_calibration.ipynb) |
-| [eval_docs.txt](eval_docs.txt) + [eval_report.json](eval_report.json) | протоколы статьи (acquisition/distraction/chain) на 20 документах |
-| [scripts/train_writer.py](../scripts/train_writer.py) | обучение writer'а на своей модели (SmolLM2-135M → T4/TPU) |
-| [writer_night.safetensors](https://github.com/Akseleu-J/atomicng/releases/tag/v0.5.0a2) | **обученный writer** (860 шагов, acquisition +0.0422) — из Release |
+| [Quickstart notebook](../notebooks/QUICKSTART.ipynb) | Write, check guards, verify deletion, run evaluations, and check publication on CPU. |
+| [TPU calibration notebook](../notebooks/tpu_calibration.ipynb) | Run TPU calibration in [Colab](https://colab.research.google.com/github/Akseleu-J/atomicng/main/notebooks/tpu_calibration.ipynb). |
+| [Evaluation corpus](eval_docs.txt) and [report](eval_report.json) | Acquisition, distraction, and chain examples on 20 documents. |
+| [Writer training script](../scripts/train_writer.py) | Train a writer against a Hugging Face model such as SmolLM2-135M. |
+| [Trained writer release](https://github.com/Akseleu-J/atomicng/releases/tag/v0.5.0a2) | The 860-step checkpoint associated with the +0.0422 acquisition result. |
 
-## Три строки до первой записи
+## Write to memory
 
 ```python
 import atomicng
+
 model = atomicng.TinyModel()
-atomicng.write(model, "Твой первый факт в n-gram памяти.")
-atomicng.verify_deletion(model)   # откат побитовый — всегда
+atomicng.write(model, "Your first fact in n-gram memory.")
+atomicng.verify_deletion(model)  # Verify bit-exact rollback.
 ```

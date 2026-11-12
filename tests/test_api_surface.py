@@ -1,7 +1,7 @@
-"""Golden-тест публичного API: перед v1.0 поверхность заморожена.
+"""Golden Public API Test: The Surface Frozen Before v1.0.
 
-Изменение этого списка = сознательное решение (обнови golden-список и CHANGELOG
-с пометкой API-change). Случайное изменение — ошибка релиза.
+Change this list = conscious decision (update the golden list and CHANGELOG)
+A random change is a release error.
 """
 from __future__ import annotations
 
@@ -74,16 +74,16 @@ def test_public_api_frozen():
     added = set(public) - set(golden)
     removed = set(golden) - set(public)
     assert not added and not removed, (
-        "ПУБЛИЧНЫЙ API ИЗМЕНИЛСЯ перед v1.0! "
-        f"Добавлено: {sorted(added)}; Удалено: {sorted(removed)}. "
-        "Если это сознательное изменение — обнови GOLDEN_API в тесте и CHANGELOG "
-        "с пометкой API-change; иначе — верни имена."
+        "Public API changed before v1.0! "
+        f"Added: {sorted(added)}; Removed.: {sorted(removed)}. "
+        "If this is a conscious change, update Golden._API in the test and the CHANGELOG "
+        "Note the API-change; otherwise, return the names.."
     )
     assert sorted(atomicng.__all__) == public
-    assert public == sorted(public), "__all__ должен быть отсортирован"
+    assert public == sorted(public), "__all__ should be sorted"
 
 
 def test_version_semver_pre1():
-    """v1.0.0 — первый стабильный тег: мажор должен быть 1 (обновляется при мажорных релизах)."""
+    """v1.0.0 – First stable tag: Major must be 1 (updated in major releases))."""
     major = int(atomicng.__version__.split(".")[0])
-    assert major == 1, f"ожидался мажор 1 (v1.0.0), получено {atomicng.__version__}"
+    assert major == 1, f"expected major 1 (v1.0.0), obtained {atomicng.__version__}"

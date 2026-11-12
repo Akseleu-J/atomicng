@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "atomicng"
-version = "1.0.0"
+version = "1.0.1"
 description = "AtomicNG — atomic forward-only continual writing into a language model's native n-gram memory (arXiv:2610.31125)"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -40,7 +40,7 @@ select = ["E", "F", "W", "I", "UP", "B"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["E402"]  # sys.path.insert перед импортами atomicng
+"tests/*" = ["E402"]  # sys.path.insert before importing atomicng
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,10 +1,7 @@
-"""Safety-gate публикации оверлея (S3 — главный поведенческий барьер).
+"""Check an overlay before publication.
 
-Публикация .atomicng разрешена только если:
-1. verify_deletion прошёл (очистка Δ возвращает базу побитово, restore точен);
-2. дрейф на нейтральных пробах ≤ max_neutral_drift (поведенческий ущерб);
-3. hot-строк (норма > hot_norm_cap) ≤ max_hot_rows — защита от «форматных строк»
-   из раздела отказов статьи.
+Require bit-exact deletion verification, neutral drift within its configured
+limit, and a hot-row count at or below max_hot_rows.
 """
 from __future__ import annotations
 
@@ -43,9 +40,9 @@ class PublishReport:
 
 
 def neutral_drift(model, n_probes: int) -> float:
-    """Средний сдвиг выходов на нейтральных пробах: текущий патч vs очищенный (локальность).
+    """Average yield shift on neutral samples: current patch vs cleared (locality)).
 
-    Пробы генерируются один раз (neutral_token_seqs, если бэкенд умеет) и переиспользуются.
+    Samples are generated once (neutral)_token_seqs, If the backend can) and reused.
     """
     if hasattr(model, "neutral_token_seqs"):
         seqs = model.neutral_token_seqs(n_probes)
@@ -61,12 +58,12 @@ def neutral_drift(model, n_probes: int) -> float:
 
 
 def hot_rows_above(patch, cap: float) -> list[int]:
-    """Строки патча с нормой выше капа (детектор «форматных строк»)."""
+    """Return patch row IDs whose norm exceeds the cap."""
     return sorted(r for r in patch.row_ids() if float(np.linalg.norm(patch._rows[r])) > cap)
 
 
 def publish_check(model, config: PublishConfig | None = None, *, strict: bool = True) -> PublishReport:
-    """Полный прогон safety-gate. strict=True — PublishRejected при провале любого чека."""
+    """Run publication checks. In strict mode, raise PublishRejected if a check fails."""
     config = config or PublishConfig()
     verify = verify_deletion(model, config.n_probes)
     drift = neutral_drift(model, config.n_probes)
@@ -89,5 +86,5 @@ def publish_check(model, config: PublishConfig | None = None, *, strict: bool = 
     )
     if strict and not report.passed:
         reasons = [k for k, v in checks.items() if isinstance(v, bool) and not v]
-        raise PublishRejected(f"safety-gate не пропустил оверлей: {', '.join(reasons)}")
+        raise PublishRejected(f"Overlay rejected by publication checks: {', '.join(reasons)}")
     return report

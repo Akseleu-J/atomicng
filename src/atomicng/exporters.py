@@ -1,13 +1,9 @@
-"""Экспорт таблицы T⁰+Δ в PLE-совместимый бинарный формат для llama.cpp-движков.
+"""Export the merged table T⁰+Δ in binary PLE format.
 
-llama.cpp читает sidecar n-gram таблицы (PLE-путь, конвенция Engram) как ПОЛНУЮ таблицу
-значений. Наш оверлей хранит только Δ, поэтому экспорт = слияние T⁰ источника с патчем:
-
-    magic "DNGPLE01" | header-json len (u32 LE) | header-json | rows float32 LE (N×d, row-major)
-
-header-json: {spec, source, seed, created_by, sources, export_version, integrity_sha256}.
-Формат наш и задокументирован здесь; для конкретных форков llama.cpp адаптер добавляется
-в v0.4+ по мере доступа к их кодопутям (Track vLLM/llama.cpp).
+The overlay stores only Δ, so export requires the source table T⁰.
+The file contains the DNGPLE01 magic bytes, a little-endian uint32 JSON
+header length, the JSON header, and little-endian float32 rows in row-major order.
+The header records the specification, provenance, export version, and SHA-256.
 """
 from __future__ import annotations
 
@@ -27,11 +23,11 @@ PLE_EXPORT_VERSION = 1
 
 
 def _materialize_full_table(base_table: np.ndarray, patch: MemoryPatch) -> np.ndarray:
-    """T⁰ + Δ (материализованный) — полная таблица для движка."""
+    """T⁰ + Δ (materialized) - complete table for the engine."""
     full = np.asarray(base_table, dtype=np.float32).copy()
     if full.shape != (patch.spec.n_rows, patch.spec.row_width):
         raise OverlayError(
-            f"базовая таблица {full.shape} не совпадает со спекой "
+            f"base-table {full.shape} not matching the stew "
             f"({patch.spec.n_rows}, {patch.spec.row_width})"
         )
     patch.materialize()
@@ -41,7 +37,7 @@ def _materialize_full_table(base_table: np.ndarray, patch: MemoryPatch) -> np.nd
 
 
 def export_ple(base_table: np.ndarray, patch: MemoryPatch, path: str, *, source: str = "sidecar") -> str:
-    """Пишет PLE-файл полной таблицы T⁰+Δ; возвращает sha256 файла."""
+    """Write a PLE file with the merged table T⁰+Δ and return its SHA-256 digest."""
     full = _materialize_full_table(base_table, patch)
     header = {
         "export_version": PLE_EXPORT_VERSION,
@@ -68,10 +64,10 @@ def export_ple(base_table: np.ndarray, patch: MemoryPatch, path: str, *, source:
 
 
 def load_ple(path: str) -> tuple[TableSpec, np.ndarray, dict]:
-    """Читает PLE-файл → (спека, полная таблица, header). Строгая валидация."""
+    """Reads the PLE file → (speak, full table, header).."""
     data = Path(path).read_bytes()
     if data[: len(PLE_MAGIC)] != PLE_MAGIC:
-        raise OverlayError(f"{path!r}: не PLE-файл (magic не совпал)")
+        raise OverlayError(f"{path!r}: invalid PLE file magic")
     (header_len,) = struct.unpack_from("<I", data, len(PLE_MAGIC))
     off = len(PLE_MAGIC) + 4
     header = json.loads(data[off : off + header_len].decode("utf-8"))
@@ -82,7 +78,7 @@ def load_ple(path: str) -> tuple[TableSpec, np.ndarray, dict]:
         header_bytes = json.dumps(no_integrity, ensure_ascii=False).encode("utf-8")
         actual = hashlib.sha256(PLE_MAGIC + header_bytes + body).hexdigest()
         if actual != expected:
-            raise OverlayError(f"{path!r}: манифест целостности PLE не совпал (файл повреждён)")
+            raise OverlayError(f"{path!r}: PLE integrity check failed")
     spec = TableSpec.from_json(json.dumps(header["spec"]))
     table = np.frombuffer(body, dtype="<f4").reshape(header["n_rows"], header["row_width"]).copy()
     return spec, table, header

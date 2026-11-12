@@ -1,13 +1,10 @@
-"""WriterMLP — архитектура writer'а из статьи: два 2-слойных MLP с hidden 256.
+"""Two-layer writer MLPs for row targets and update gates.
 
-V_θ: признаки события → цель записи v_a (row_width); цель ЛИНЕЙНА (v = s_h·V_θ(x_a)),
-как в статье; ограничение tanh — opt-in стабильность для sidecar-адаптера (FIDELITY.md).
-B_θ: [x_a, Δ_j, v_a − Δ_j, log(1+c_j)] → скалярный гейт β_a = σ(·) ∈ [0, 1].
-Масштаб s_h калибруется по статье (ρ=0.01·RMS(T⁰_h)) методом calibrate_to_table.
-
-Вариант λ (memory_aware) различается ОРКЕСТРАЦИЕЙ (delta-вариант кодирует блоки
-последовательно, перечитывая память), архитектура голов общая (как в статье:
-delta форк обучается от plain).
+V_θ maps event features to a linear row target scaled by s_h. Optional tanh
+bounding is available for the sidecar. B_θ uses the event features, current
+row, target difference, and log(1+c_j) to produce a sigmoid gate.
+Plain and delta encoding share the writer architecture. Their orchestration
+determines whether event features include the current patch.
 """
 from __future__ import annotations
 
@@ -32,16 +29,16 @@ class WriterMLP(nn.Module):
         self.row_width = row_width
         self.memory_aware = memory_aware
         self.target_scale = target_scale
-        self.bound_targets = bound_targets  # False = линейные цели (статья); True = tanh-стабилизация
-        # признаки: [h_p; mean h_{p+1..p+4}; пул блока; эмбеддинг (order, head)]  (Eq. 7)
+        self.bound_targets = bound_targets  # False = linear goals (article); True = tanh-stabilization
+        # sign: [h_p; mean h_{p+1..p+4}; block pool; embedding (order, head)]  (Eq. 7)
         feature_dim = 3 * hidden_size + head_embed_dim
-        self.head_embed = nn.Embedding(4, head_embed_dim)  # order ∈ {0: нет, 2: биграмма, 3: триграмма}
+        self.head_embed = nn.Embedding(4, head_embed_dim)  # order ∈ {0: none, 2: bigram, 3: trigram}
         self.v_head = nn.Sequential(
             nn.Linear(feature_dim, hidden), nn.GELU(),
             nn.Linear(hidden, hidden), nn.GELU(),
             nn.Linear(hidden, row_width),
         )
-        # вход гейта: x_a, Δ_j, v_a − Δ_j, log(1+c_j)
+        # gate entry: x_a, Δ_j, v_a − Δ_j, log(1+c_j)
         self.b_head = nn.Sequential(
             nn.Linear(feature_dim + 2 * row_width + 1, hidden), nn.GELU(),
             nn.Linear(hidden, hidden), nn.GELU(),
@@ -50,17 +47,17 @@ class WriterMLP(nn.Module):
 
     def forward(
         self,
-        hidden: torch.Tensor,          # (B, T, Hd) — вход LM-head, grad-stop выполнен здесь
-        row_ids: torch.Tensor,         # (B, T-1) long — адреса строк биграмм
-        delta_rows: torch.Tensor,      # (B, T-1, d) — текущие Δ_j (нулевые для новых строк)
+        hidden: torch.Tensor,          # (B, T, Hd – LM-head entrance, grad-stop executed here
+        row_ids: torch.Tensor,         # (B, T-1) long - addresses of bigram lines
+        delta_rows: torch.Tensor,      # (B, T-1, d) are current Δ_j (zero-line)
         counts: torch.Tensor,          # (B, T-1) float — c_j
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """→ (targets (B, T-1, d), gates (B, T-1), row_ids). События всех позиций p ≥ 1."""
-        h = hidden.detach()  # grad-stop на Ĥ: в признаки градиенты не текут
+        """→ (targets (B, T-1, d), gates (B, T-1), row_ids). Events of all positions p ≥ 1."""
+        h = hidden.detach()  # grad-stop on  : in signs gradients do not flow
         b, t, hd = h.shape
-        hp = h[:, 1:, :]                                                  # события с 1-й позиции
-        pool = h.mean(dim=1, keepdim=True).expand(b, t - 1, hd)           # пул блока
-        # среднее по следующим 4 позициям (хвост зажимается на последней): h[p+1..p+4]
+        hp = h[:, 1:, :]                                                  # Events from 1st position
+        pool = h.mean(dim=1, keepdim=True).expand(b, t - 1, hd)           # block
+        # average for the following 4 positions (tail clamped on the last): h[p+1..p+4]
         hpad = torch.cat([h, h[:, -1:, :].expand(b, 4, hd)], dim=1)
         nxt = (hpad[:, 2 : t + 1, :] + hpad[:, 3 : t + 2, :]
                + hpad[:, 4 : t + 3, :] + hpad[:, 5 : t + 4, :]) / 4.0
@@ -77,16 +74,16 @@ class WriterMLP(nn.Module):
 
     @torch.no_grad()
     def calibrate_to_table(self, t0: torch.Tensor, rho: float = TARGET_RMS_RATIO) -> float:
-        """Масштаб s_h по статье: RMS начальных целей = ρ·RMS(T⁰_h) (ρ=0.01).
+        """Scale s_h RMS of initial goals = ρ·RMS(T)⁰_h) (ρ=0.01).
 
-        Практическая калибровка: сырой выход V_θ прогоняется на шуме N(0,1)
-        (распределение входа в статье не специфицировано), s_h = ρ·RMS(строк T⁰) / RMS(сырых целей).
-        Возвращает установленный s_h.
+        Practical calibration: raw output V_θ run at noise N(0.1))
+        (The distribution of the entry in the article is not specified, s_h = ρ·RMS(T⁰ rows) / RMS(raw targets).
+        Returns the established s_h.
         """
         row_rms = t0.detach().float().pow(2).mean(dim=1).sqrt().mean()
         probe = torch.randn(512, self.v_head[0].in_features, generator=torch.Generator().manual_seed(0))
         raw_rms = self.v_head(probe).float().pow(2).mean().sqrt()
         if float(raw_rms) <= 0:
-            raise ValueError("сырой RMS целей нулевой — калибровка невозможна")
+            raise ValueError("Cannot calibrate because the raw target RMS is zero.")
         self.target_scale = float(row_rms) / float(raw_rms) * rho
         return self.target_scale

@@ -1,4 +1,4 @@
-"""Раннер тестов: делегирует pytest; без pytest — только фреймворко-независимые core-тесты.
+"""Runner Tests: delegates pytest; without pytest, only framework-independent core tests.
 
     python tests/run_all.py
 """
@@ -31,7 +31,7 @@ def main() -> int:
 
                 traceback.print_exc()
                 print(f"FAIL {name}")
-        print(f"\n{len(tests) - failed}/{len(tests)} core-тестов прошло (pytest не установлен)")
+        print(f"\n{len(tests) - failed}/{len(tests)} Core tests passed (pytest not installed))")
         return 1 if failed else 0
     return subprocess.call([sys.executable, "-m", "pytest", "tests", "-q"], cwd=ROOT)
 

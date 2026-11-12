@@ -1,7 +1,13 @@
-"""Audit-лог (append-only JSONL) и pre-image журнал для точного undo (S4).
+"""Append-only JSONL audit logging and exact pre-image undo.
 
-Точный undo возможен дёшево: перед блоком записи сохраняются pre-image затронутых строк
-(строка = row_width float), их счётчики и такт. revert восстанавливает состояние байт-в-байт.
+Before writing a block, save the affected rows, their counters, and the clock.
+Reverting restores the saved state byte for byte.
+
+Undo semantics (author review, issue #1): undo is LAST-IN, FIRST-OUT. `revert_last`
+is always exact for the most recent block. Reverting an OLDER block after later
+blocks have touched the same rows is not exact — D1 and the gate depend on the
+current row state, so the pre-image journal only guarantees exact rollback in
+LIFO order. For non-LIFO scenarios use overlay merge/revert semantics instead.
 """
 from __future__ import annotations
 
@@ -16,7 +22,7 @@ from .memory import MemoryPatch
 
 
 class AuditLog:
-    """Append-only журнал операций. Каждый write/merge/clear оставляет запись с отчётом."""
+    """Append-only log of operations. write/merge/clear leaves a note with a report."""
 
     def __init__(self, path: str | None = None) -> None:
         self.path = Path(path) if path else None
@@ -43,7 +49,7 @@ class _UndoEntry:
 
 
 class UndoJournal:
-    """Стек pre-image снимков: revert_last возвращает патч в состояние до блока записи."""
+    """Store pre-images so revert_last can restore the patch before the last write."""
 
     def __init__(self) -> None:
         self._stack: list[_UndoEntry] = []

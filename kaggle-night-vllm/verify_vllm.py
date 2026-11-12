@@ -1,7 +1,7 @@
-"""vLLM-калибровка на Kaggle GPU (Linux): установка vllm, артефакты AtomicNG, serve smoke.
+"""vLLM calibration on Kaggle GPU (Linux): installation of vllm, artifacts AtomicNG, serve smoke.
 
-Честный охват: пайплайн export_for_vllm + запуск движка на той же машине. Хук merged-таблицы
-внутрь графа движка — Track B/upstream (docs/vllm.md путь 3); здесь доказывается окружение.
+Honest coverage: Pipeline export_for_vllm + running the engine on the same machine.
+inside the graph engine - Track B/upstream (docs/vllm.md path 3); the environment is proved here.
 """
 import json
 import subprocess
@@ -40,7 +40,7 @@ def main() -> None:
         code += pip(["--quiet", "pyyaml"])
         import atomicng
 
-        # S1: оверлей → export_for_vllm
+        # S1: overlay → export_for_vllm
         import numpy as np
 
         model = atomicng.TinyModel(spec=atomicng.TableSpec(name="vllm-calib", n_rows=4096, row_width=16))
@@ -55,7 +55,7 @@ def main() -> None:
                            "merged_shape": list(merged.shape), "sha256": cfg["sha256_table"][:16],
                            "delta_rows": cfg["n_delta_rows"]})
 
-        # S2: установка vllm (тяжёлая) и запуск движка на той же машине
+        # S2: install vllm (heavy) and run the engine on the same machine
         save("S2_vllm_install", {"status": "RUNNING"})
         code = pip(["--quiet", "vllm"], timeout=3600)
         if code != 0:
@@ -70,8 +70,8 @@ def main() -> None:
                 "status": "OK", "vllm": vllm.__version__,
                 "engine_init_min": round((time.monotonic() - t0) / 60, 1),
                 "sample_len": len(out_txt),
-                "note": "движок работает на Linux GPU рядом с артефактами AtomicNG; "
-                        "хук merged-таблицы в граф — Track B (docs/vllm.md путь 3)",
+                "note": "The engine runs on a Linux GPU next to AtomicNG artifacts; "
+                        "graph-based merged tables - Track B (docs/vllm.md path 3)",
             })
     except Exception:  # noqa: BLE001
         save("V0_exception", {"status": "EXCEPTION", "traceback": traceback.format_exc()[-4000:]})
