@@ -144,6 +144,16 @@ python examples/pretrained_writer.py
 
 The checkpoint contains Writer weights. The example initializes a reproducible sidecar projection because the original run did not save its projection. The example reports the measured NLL on one input alongside the write and rollback checks. See [the calibration record](CALIBRATION.md) for the original training results.
 
+**Checkpoint NLL audit** (fixed seed, [script](scripts/eval_checkpoint_nll.py), run on the shipped 860-step checkpoint):
+
+| Measurement | Result |
+|---|---|
+| Held-out doc, written doc itself (before → after write) | ≈ 0 (max +0.0033) — acquisition sanity check only |
+| **Paraphrase of the written doc (before → after)** | **−0.09 … −2.05 (mean −0.89): memory writes currently HURT paraphrases** |
+| Unrelated held-out text (before → after 8 writes) | exactly 0.0 — perfect locality |
+
+The paraphrase damage is hash-collision interference: rows written for the doc's bigrams fire inside the paraphrase with deltas derived from a different context. This is the real limit at this training scale — the paper's writer (100M training tokens) resolves it. Multi-seed retraining is queued.
+
 ### Train a writer on your own model
 
 ```sh

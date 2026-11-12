@@ -33,6 +33,18 @@ The sidecar used a 4096×16 table and seed 17.
 
 These runs exercised the end-to-end training path. The longest run showed a positive acquisition signal on one document. Reproducing the paper's 100-million-token training regime remains separate work.
 
+### Shipped checkpoint NLL audit (fixed seed, 2026-11-12)
+
+Measured on the released 860-step checkpoint against held-out Sherlock paragraphs ([script](scripts/eval_checkpoint_nll.py)):
+
+| Measurement | Δ (NLL before → after write) |
+|---|---|
+| Held-out doc, the written doc itself | ≈ 0 (max +0.0033) — acquisition sanity check only |
+| **Paraphrase of the written doc** | **−0.09 … −2.05 (mean −0.89): writes currently HURT paraphrases** |
+| Unrelated held-out text after 8 writes | exactly 0.0 — perfect locality |
+
+The paraphrase damage is hash-collision interference: rows written for the doc's bigrams fire inside the paraphrase carrying deltas derived from a different context. At this training scale it is the dominant effect; the paper's writer (100M training tokens) resolves it. Multi-seed retraining is queued.
+
 ## TPU results
 
 - On Kaggle TPU VM, the XLA BPTT chain reached S3 on device. The session was canceled after two hours.
