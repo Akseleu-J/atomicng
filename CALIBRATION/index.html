@@ -1,0 +1,839 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AtomicNG — atomic forward-only continual writing into a language model's native n-gram memory (arXiv:2610.31125)">
+      
+      
+      
+        <link rel="canonical" href="https://akseleu-j.github.io/atomicng/CALIBRATION/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../FIDELITY/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Calibration (live matrix) - AtomicNG</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#atomicng-calibration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="AtomicNG" class="md-header__button md-logo" aria-label="AtomicNG" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 17H7V7h10m4 4V9h-2V7a2 2 0 0 0-2-2h-2V3h-2v2h-2V3H9v2H7c-1.11 0-2 .89-2 2v2H3v2h2v2H3v2h2v2a2 2 0 0 0 2 2h2v2h2v-2h2v2h2v-2h2a2 2 0 0 0 2-2v-2h2v-2h-2v-2m-6 2h-2v-2h2m2-2H9v6h6z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AtomicNG
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Calibration (live matrix)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Akseleu-J/atomicng" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Akseleu-J/atomicng
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="AtomicNG" class="md-nav__button md-logo" aria-label="AtomicNG" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 17H7V7h10m4 4V9h-2V7a2 2 0 0 0-2-2h-2V3h-2v2h-2V3H9v2H7c-1.11 0-2 .89-2 2v2H3v2h2v2H3v2h2v2a2 2 0 0 0 2 2h2v2h2v-2h2v2h2v-2h2a2 2 0 0 0 2-2v-2h2v-2h-2v-2m-6 2h-2v-2h2m2-2H9v6h6z"/></svg>
+
+    </a>
+    AtomicNG
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Akseleu-J/atomicng" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Akseleu-J/atomicng
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration (live matrix)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration (live matrix)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#environment-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linux-cuda-verification-for-040a3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux CUDA verification for 0.4.0a3
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#smollm2-135m-writer-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SmolLM2-135M writer training
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SmolLM2-135M writer training">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#shipped-checkpoint-nll-audit-fixed-seed-2026-11-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shipped checkpoint NLL audit (fixed seed, 2026-11-12)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tpu-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TPU results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vllm-on-kaggle-linux-and-tesla-t4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vLLM on Kaggle Linux and Tesla T4
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FIDELITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper fidelity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vllm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    vLLM integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CHANGELOG/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#environment-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linux-cuda-verification-for-040a3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux CUDA verification for 0.4.0a3
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#smollm2-135m-writer-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SmolLM2-135M writer training
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SmolLM2-135M writer training">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#shipped-checkpoint-nll-audit-fixed-seed-2026-11-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shipped checkpoint NLL audit (fixed seed, 2026-11-12)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tpu-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TPU results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vllm-on-kaggle-linux-and-tesla-t4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vLLM on Kaggle Linux and Tesla T4
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="atomicng-calibration">AtomicNG calibration</h1>
+<p>These figures come from recorded AtomicNG 0.4.0a3 and 0.5.0a1 runs. The original evidence references point to the accompanying <code>kaggle-evidence/</code> directory.</p>
+<h2 id="environment-matrix">Environment matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Environment</th>
+<th>Python</th>
+<th>PyTorch</th>
+<th>Cores or device</th>
+<th>pytest</th>
+<th>BPTT harness (four-block group)</th>
+<th>Writer training</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows 10, local CPU</td>
+<td>3.12</td>
+<td>2.x+cpu</td>
+<td>8 cores</td>
+<td><strong>72/72</strong></td>
+<td>~50 s/group</td>
+<td>40 steps in ~100 min</td>
+</tr>
+<tr>
+<td>Kaggle Linux, CPU</td>
+<td>3.13</td>
+<td>2.11+cpu</td>
+<td>4 cores</td>
+<td><strong>71/72</strong> ¹</td>
+<td>S2 failed on a missing <code>os</code> import, later fixed</td>
+<td>860 steps in 7.8 h</td>
+</tr>
+<tr>
+<td>Kaggle Linux, CUDA</td>
+<td>3.13</td>
+<td>2.11+cu128</td>
+<td>Tesla T4</td>
+<td><strong>72/72</strong></td>
+<td><strong>73 ms/group</strong> (reported as ~2,000× CPU in that run)</td>
+<td>Stopped before training because of device issues fixed in 0.4.0a3</td>
+</tr>
+<tr>
+<td>Colab Linux, CPU</td>
+<td>3.13</td>
+<td>2.14+cpu</td>
+<td>24 cores</td>
+<td>Not run</td>
+<td>54 ms/group ²</td>
+<td>157 steps in 45 min, minimum loss 1.6025</td>
+</tr>
+<tr>
+<td>Colab TPU</td>
+<td>3.13</td>
+<td>—</td>
+<td><code>TpuDevice(id=0)</code></td>
+<td>—</td>
+<td>JAX detected the TPU. See the TPU notes below for the XLA path.</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>¹ The sole failure was <code>test_publish_gate</code>, which depended on the repository's <code>configs/</code> path. The fix uses self-contained YAML and passed verification on Linux with CUDA.</p>
+<p>² Preliminary. The first run lacked <code>torch_xla</code> at S0, but recorded an S3 report after the notebook cells were run out of order.</p>
+<h2 id="linux-cuda-verification-for-040a3">Linux CUDA verification for 0.4.0a3</h2>
+<ul>
+<li>The Tesla T4 run on Python 3.13 passed <strong>72 of 72 tests</strong>. The acquisition check avoided rounding and the publication gate used self-contained YAML.</li>
+<li>The CUDA path exercised attach, write, and NLL evaluation. Clearing <code>Δ</code> restored outputs bit for bit (<code>max_diff = 0.0</code>) with deterministic CUDA mode and <code>CUBLAS_WORKSPACE_CONFIG</code>.</li>
+</ul>
+<h2 id="smollm2-135m-writer-training">SmolLM2-135M writer training</h2>
+<p>The sidecar used a 4096×16 table and seed 17.</p>
+<table>
+<thead>
+<tr>
+<th>Run</th>
+<th>Steps</th>
+<th>Loss</th>
+<th>Acquisition Δ_empty</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kaggle CPU, 7.8 h</td>
+<td>860</td>
+<td>3.36 → 3.12 (min 1.606)</td>
+<td><strong>+0.0422</strong> on document 1, 0 on the others</td>
+</tr>
+<tr>
+<td>Colab TPU VM, 45 min (run 1)</td>
+<td>157</td>
+<td>3.36 → ~2.7–3.4 (min 1.6025)</td>
+<td>−0.0272 to 0</td>
+</tr>
+<tr>
+<td>Colab TPU VM, 45 min (run 2)</td>
+<td>156</td>
+<td>3.35 → ~2.4–3.4 (min 1.6116)</td>
+<td>−0.0173 to +0.0147 (mean +0.0024)</td>
+</tr>
+</tbody>
+</table>
+<p>These runs exercised the end-to-end training path. The longest run showed a positive acquisition signal on one document. Reproducing the paper's 100-million-token training regime remains separate work.</p>
+<h3 id="shipped-checkpoint-nll-audit-fixed-seed-2026-11-12">Shipped checkpoint NLL audit (fixed seed, 2026-11-12)</h3>
+<p>Measured on the released 860-step checkpoint against held-out Sherlock paragraphs (<a href="scripts/eval_checkpoint_nll.py">script</a>):</p>
+<table>
+<thead>
+<tr>
+<th>Measurement</th>
+<th>Δ (NLL before → after write)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Held-out doc, the written doc itself</td>
+<td>≈ 0 (max +0.0033) — acquisition sanity check only</td>
+</tr>
+<tr>
+<td><strong>Paraphrase of the written doc</strong></td>
+<td><strong>−0.09 … −2.05 (mean −0.89): writes currently HURT paraphrases</strong></td>
+</tr>
+<tr>
+<td>Unrelated held-out text after 8 writes</td>
+<td>exactly 0.0 — perfect locality</td>
+</tr>
+</tbody>
+</table>
+<p>The paraphrase damage is hash-collision interference: rows written for the doc's bigrams fire inside the paraphrase carrying deltas derived from a different context. At this training scale it is the dominant effect; the paper's writer (100M training tokens) resolves it. Multi-seed retraining is queued.</p>
+<h2 id="tpu-results">TPU results</h2>
+<ul>
+<li>On Kaggle TPU VM, the XLA BPTT chain reached S3 on device. The session was canceled after two hours.</li>
+<li>On Colab v5e with Python 3.13 and PyTorch 2.14.1, JAX 0.11.2 detected the TPU. The PyPI <code>torch_xla</code> build had an ABI mismatch with the preinstalled PyTorch (<code>_XLAC.so: undefined symbol</code>). The notebook includes a cell to install a matching pair and restart the runtime.</li>
+<li>On 5 November, the owner ran S3b on <code>TPU_0</code> with JAX. The D1 read, writer, and write loop took <strong>8.4 ms/iteration</strong>. The maximum was 0.156 s, including first-iteration JIT compilation. Loss stayed finite across 20 iterations. The recorded report is <code>kaggle-evidence/colab-tpu/results/S3b_accel_jax.json</code>.</li>
+<li>The notebook's XLA path is used for on-device BPTT training after restarting with the matching packages.</li>
+</ul>
+<h2 id="vllm-on-kaggle-linux-and-tesla-t4">vLLM on Kaggle Linux and Tesla T4</h2>
+<ul>
+<li><code>export_for_vllm</code> generated <code>ngram_table_merged.npz</code> and <code>vllm_config.json</code> with SHA-256 and provenance on the target platform.</li>
+<li>vLLM generated text with <code>facebook/opt-125m</code> at <strong>21.4 output tokens/s</strong> on a T4. AtomicNG artifacts were present in the same environment. An isolated <code>uv</code> virtual environment avoided the conflict with Kaggle's preinstalled PyTorch. See <code>kaggle-night-vllm/verify_vllm3.py</code>.</li>
+<li>Loading the merged table into the engine graph remains Track B upstream work. See the <a href="docs/vllm.md">vLLM integration guide</a>.</li>
+</ul>
+<h2 id="known-limits">Known limits</h2>
+<ul>
+<li>Bit-exact CUDA restoration requires deterministic mode. CPU restoration does not require those flags.</li>
+<li>The XLA path keeps bigram hashing on the CPU behind a gradient stop and places the tensors on the TPU.</li>
+<li>The vLLM reader has yet to be calibrated.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy", "navigation.instant"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
