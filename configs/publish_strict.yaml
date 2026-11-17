@@ -1,0 +1,5 @@
+# Atomicng: Strict Safety-Gate Publications (S3))
+publish:
+  max_neutral_drift: 0.0   # Locality: Neutral samples should not be moved at all
+  max_hot_rows: 0          # no single “format” line (article rejection section))
+  hot_norm_cap: 1.0        # bar norm threshold for hot detector

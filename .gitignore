@@ -1,0 +1,26 @@
+# build artifacts
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# squash
+runs/
+kaggle-evidence/
+
+# Night-Run Payloads (published through Kaggle, not through git))
+kaggle-night/
+kaggle-night-cpu/
+kaggle-night-gpu/
+kaggle-night-tpu/
+kaggle-night-verify/
+
+# medium
+.env
+.env.*
+site_docs/
+site/

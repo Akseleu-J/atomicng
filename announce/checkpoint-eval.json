@@ -1,0 +1,44 @@
+{
+  "writer": "C:\\Users\\omirb\\.zcode\\workspace\\e721ed1e-feba-4588-bc1c-7a9478695327\\kaggle-evidence\\night-sessions\\atomicng-cpu-night-1\\writer_night.safetensors",
+  "model": "HuggingFaceTB/SmolLM2-135M",
+  "seed": 17,
+  "writer_config": {
+    "hidden_size": 576,
+    "row_width": 16,
+    "target_scale": 0.3,
+    "memory_aware": false
+  },
+  "acquisition_doc_delta": [
+    0.0,
+    0.0033,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "acquisition_doc_mean": 0.0004,
+  "paraphrase_delta": [
+    -0.7713,
+    -2.0458,
+    -1.0713,
+    -0.0918,
+    -0.6013,
+    -0.514,
+    -0.7909,
+    -1.1992
+  ],
+  "paraphrase_mean": -0.8857,
+  "unrelated_delta_after_writes": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "unrelated_mean_abs": 0.0
+}

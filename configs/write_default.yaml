@@ -1,0 +1,20 @@
+# Atomicng: Config-as-code (one file per record) write/eval — Like the LLaMA-Factory.)
+spec:
+  name: sidecar-small
+  n_rows: 16384
+  row_width: 160
+  n_heads: 1
+  key_order: 2
+  inject_layer: 2
+
+writer:
+  name: hash        # v0.2a tiny-pipeline; 'plain'/'delta' - WriterMLP via API (torch))
+  gate: 0.5
+
+policies:
+  row_budget: null          # Strict line limit (S2); set a number for production
+  write_budget: null        # limiting
+  hot_row_norm_cap: null    # smack-drive-drive warning + hot-metric
+  hard_row_norm_cap: null   # slack-drop
+
+seed: 17
